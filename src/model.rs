@@ -24,9 +24,32 @@ impl Identifier {
 }
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
+pub struct Unsigned {
+    original: u32,
+    hex: String,
+}
+
+impl Unsigned {
+    pub fn new(original: u32) -> Self {
+        Unsigned {
+            original,
+            hex: format!("{:#X}", original),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Clone, Eq, PartialEq)]
+pub struct EnumCase {
+    pub name: Identifier,
+    pub description: String,
+    pub value: Unsigned,
+}
+
+#[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 pub struct Enum {
     pub name: Identifier,
     pub description: String,
+    pub cases: Vec<EnumCase>,
 }
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]

@@ -10,6 +10,7 @@ pub enum Endianness {
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 pub struct EnumCaseDefinition {
+    pub name: String,
     pub value: u32,
     #[serde(default)]
     pub description: String,

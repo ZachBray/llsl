@@ -25,4 +25,9 @@ The protocol uses the following values to represent enumeration values.
 
 
 
+| Type | Value | Description |
+| :--- | :---- | :---------- |
+| _Reserved_ | `0x0` | Reserved |
+| _Setup_ | `0x1` | Sent by client to initiate protocol processing. |
+| _Lease_ | `0x2` | Sent by Responder to grant the ability to send requests. |
 

@@ -25,4 +25,10 @@ The protocol uses the following values to represent enumeration values.
 
 {{{description}}}
 
+| Type | Value | Description |
+| :--- | :---- | :---------- |
+{{#each cases ~}}
+| _{{{name.original}}}_ | `{{{value.hex}}}` | {{{description}}} |
+{{/each ~}}
+
 {{/each}}

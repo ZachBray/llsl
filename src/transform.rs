@@ -1,10 +1,22 @@
 use super::input::*;
 use super::model::*;
 
-fn transform_enum(decl: EnumDefinition) -> Enum {
+fn transform_enum_case(def: EnumCaseDefinition) -> EnumCase {
+    EnumCase {
+        name: Identifier::new(&def.name),
+        description: def.description,
+        value: Unsigned::new(def.value),
+    }
+}
+
+fn transform_enum(def: EnumDefinition) -> Enum {
     Enum {
-        name: Identifier::new(&decl.name),
-        description: decl.description,
+        name: Identifier::new(&def.name),
+        description: def.description,
+        cases: def.cases
+            .into_iter()
+            .map(transform_enum_case)
+            .collect::<Vec<_>>(),
     }
 }
 
