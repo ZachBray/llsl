@@ -1,0 +1,14 @@
+[package]
+name = "llsl"
+version = "0.1.0"
+authors = ["Zach Bray <zachbray@googlemail.com>"]
+
+[dependencies]
+clap = { version = "= 2.26.1", features = ["color", "suggestions"] }
+handlebars = "*"
+log = "*"
+pretty_env_logger = "*"
+serde = "*"
+serde_yaml = "*"
+serde_derive = "*"
+string_morph = "*"

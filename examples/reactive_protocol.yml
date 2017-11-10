@@ -1,0 +1,92 @@
+name: Reactive Protocol
+version: 0.0.1
+endianness: big
+
+enums:
+- name: Frame Type
+  cases:
+  - name: Reserved
+    value: 0x00
+    description: Reserved
+  - name: Setup
+    value: 0x01
+    description: Sent by client to initiate protocol processing.
+  - name: Lease
+    value: 0x02
+    description: Sent by Responder to grant the ability to send requests.
+
+codecs:
+
+- name: Frame
+  description: >-
+    When using a transport protocol that does not provide compatible framing, the Frame Length MUST be prepended to the RSocket Frame.
+  fields:
+  - name: length
+    type: unsigned
+    bits: 24
+    description: >-
+      Unsigned 24-bit integer representing the length of Frame in bytes.
+      Excluding the Frame Length field.
+
+- name: Frame Header
+  description: >-
+    RSocket frames begin with a RSocket Frame Header.
+  fields:
+  - name: Stream Id
+    type: unsigned
+    padding: 1
+    bits: 32
+    description: >-
+      Unsigned 31-bit integer representing the stream Identifier for this frame or
+      0 to indicate the entire connection.
+
+  - name: Frame Type
+    type: Frame Type
+    bits: 6
+    description: Type of Frame.
+
+  - name: Ignore
+    type: bool
+    description: Ignore frame if not understood
+
+  - name: Metadata
+    type: bool
+    description: Metadata present
+
+- name: Setup
+  description: >-
+    The SETUP frame is sent by the client to inform the server of the parameters
+    under which it desires to operate.
+  fields:
+  - name: Lease
+    type: bool
+    description: Will honor LEASE (or not).
+
+  - name: Major Version
+    type: unsigned
+    description: Unsigned 16-bit integer of Major version number of the protocol.
+    new_line: true
+    align: 16
+    bits: 16
+
+  - name: Minor Version
+    type: unsigned
+    description: Unsigned 16-bit integer of Minor version number of the protocol.
+    bits: 16
+
+  - name: Time Between KEEPALIVE Frames
+    type: unsigned
+    description: >-
+      Unsigned 31-bit integer of Time (in milliseconds) between KEEPALIVE frames
+      that the client will send. Value MUST be > 0.
+    padding: 1
+    bits: 32
+
+  - name: Max Lifetime
+    type: unsigned
+    description: >-
+      Unsigned 31-bit integer of Time (in milliseconds) that a client will allow
+      a server to not respond to a KEEPALIVE before it is assumed to be dead.
+      Value MUST be > 0.
+    padding: 1
+    bits: 32
