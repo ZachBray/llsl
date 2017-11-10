@@ -8,6 +8,9 @@ Version: {{{version}}}
 
 - [Codecs](#codecs)
 - [Enumerations](#enumerations)
+{{#each enums}}
+    - [{{{name.original}}}](#{{{name.kebab_case}}})
+{{/each}}
 
 ## Codecs
 
@@ -16,3 +19,10 @@ The protocol uses the following codecs to represent messages or message parts.
 ## Enumerations
 
 The protocol uses the following values to represent enumeration values.
+
+{{#each enums}}
+### {{{name.original}}}
+
+{{{description}}}
+
+{{/each}}
