@@ -20,6 +20,13 @@ fn transform_enum(def: EnumDefinition) -> Enum {
     }
 }
 
+fn transform_codec(def: CodecDefinition) -> Codec {
+    Codec {
+        name: Identifier::new(&def.name),
+        description: def.description,
+    }
+}
+
 pub fn transform(document: Document) -> Protocol {
     Protocol {
         name: document.name,
@@ -29,6 +36,11 @@ pub fn transform(document: Document) -> Protocol {
             .enums
             .into_iter()
             .map(transform_enum)
+            .collect::<Vec<_>>(),
+        codecs: document
+            .codecs
+            .into_iter()
+            .map(transform_codec)
             .collect::<Vec<_>>(),
     }
 }

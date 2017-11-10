@@ -53,9 +53,16 @@ pub struct Enum {
 }
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
+pub struct Codec {
+    pub name: Identifier,
+    pub description: String,
+}
+
+#[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 pub struct Protocol {
     pub name: String,
     pub description: String,
     pub version: String,
     pub enums: Vec<Enum>,
+    pub codecs: Vec<Codec>,
 }
