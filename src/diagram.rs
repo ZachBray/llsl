@@ -35,10 +35,24 @@ impl Word {
             let requires_separator = is_eow || !has_remaining;
             if requires_separator {
                 self.content.pop(); // Padding character is ignored and replaced with a pipe
-                self.splits.insert(self.content.len());
+                if !has_remaining {
+                    self.splits.insert(self.content.len());
+                }
                 self.content += "|";
             }
             if has_remaining { Some(remaining) } else { None }
+        }
+    }
+
+    fn is_full(&self) -> bool {
+        self.content.len() >= WORD_CHAR_COUNT
+    }
+
+    fn suggest_max_title_size(&self) -> usize {
+        if self.is_full() {
+            WORD_CHAR_COUNT - 2 // Will go into new word
+        } else {
+            WORD_CHAR_COUNT - self.content.len()
         }
     }
 }
@@ -89,7 +103,10 @@ impl Diagram {
 
     pub fn append(&mut self, mut section: String, bits: u32) {
         let section_size = bits as usize * 2;
-        let title_size = min(section_size - 1, 63);
+        let title_size = min(
+            section_size - 1,
+            self.current_word().suggest_max_title_size(),
+        );
         Diagram::truncate_section(&mut section, title_size);
         Diagram::pad_section(&mut section, title_size, section_size);
         let mut remaining: &str = &section;
@@ -105,9 +122,18 @@ impl Diagram {
         for current_word in &self.words {
             if let Some(last_w) = last_word {
                 diagram += "+";
+                let last_split = last_w.splits.iter().max().unwrap_or(0);
+                let first_split = current_word.splits.iter().min().unwrap_or(65);
                 for i in 1..64 {
-                    let has_split = last_w.splits.contains(i) || current_word.splits.contains(i);
-                    diagram += if has_split { "+" } else { "-" };
+                    let is_joined_above = i > last_split && i < first_split &&
+                        i < last_w.content.len();
+                    if is_joined_above {
+                        diagram += " ";
+                    } else {
+                        let has_split = last_w.splits.contains(i) ||
+                            current_word.splits.contains(i);
+                        diagram += if has_split { "+" } else { "-" };
+                    }
                 }
                 diagram += "+\n";
             }
