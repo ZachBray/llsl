@@ -10,6 +10,7 @@ pub enum ErrorCode {
     FailedToCreateOutputDir(io::Error),
     FailedToCreateOutputFile(io::Error),
     FailedToExecuteTemplate(handlebars::TemplateRenderError),
+    FailedToLocateType(String),
 }
 
 /*

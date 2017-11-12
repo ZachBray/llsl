@@ -1,3 +1,4 @@
+extern crate bit_set;
 extern crate clap;
 extern crate handlebars;
 #[macro_use]
@@ -13,6 +14,7 @@ mod try;
 mod args;
 mod input;
 mod model;
+mod diagram;
 mod transform;
 mod output;
 
@@ -37,7 +39,7 @@ fn compile() -> Try<()> {
     })?;
     debug!("Parsed input file: {:?}", document);
     info!("Building model");
-    let model = transform(document);
+    let model = transform(document)?;
     debug!("Built model: {:?}", model);
     info!("Generating code");
     generate_code(&model, &args.output_directory)

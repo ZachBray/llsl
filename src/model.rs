@@ -56,6 +56,7 @@ pub struct Enum {
 pub struct Codec {
     pub name: Identifier,
     pub description: String,
+    pub diagram: String,
 }
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]

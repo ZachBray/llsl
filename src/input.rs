@@ -1,6 +1,4 @@
-use serde::{Deserialize, Deserializer};
-
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Eq, PartialEq)]
 pub enum Endianness {
     #[serde(rename = "big")]
     Big,
@@ -8,7 +6,7 @@ pub enum Endianness {
     Little,
 }
 
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Eq, PartialEq)]
 pub struct EnumCaseDefinition {
     pub name: String,
     pub value: u32,
@@ -16,42 +14,36 @@ pub struct EnumCaseDefinition {
     pub description: String,
 }
 
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Eq, PartialEq)]
 pub struct EnumDefinition {
     pub name: String,
     #[serde(default)]
     pub description: String,
     pub cases: Vec<EnumCaseDefinition>,
+    pub bits: u32,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Eq, PartialEq)]
+#[serde(tag = "kind")]
 pub enum TypeReference {
-    Unsigned,
+    #[serde(rename = "unsigned")]
+    Unsigned {
+        #[serde(default)]
+        align: u32,
+        bits: u32,
+        #[serde(default)]
+        padding: u32,
+    },
+    #[serde(rename = "bool")]
     Bool,
-    Custom { name: String },
+    #[serde(rename = "custom")]
+    Custom {
+        #[serde(rename = "ref")]
+        name: String,
+    },
 }
 
-impl TypeReference {
-    fn from_token(token: &str) -> Self {
-        match token {
-            "unsigned" => TypeReference::Unsigned,
-            "bool" => TypeReference::Bool,
-            custom => TypeReference::Custom { name: custom.to_owned() },
-        }
-    }
-}
-
-impl<'de> Deserialize<'de> for TypeReference {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let value = String::deserialize(deserializer)?;
-        Ok(TypeReference::from_token(&value))
-    }
-}
-
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Eq, PartialEq)]
 pub struct FieldDefinition {
     pub name: String,
     #[serde(default)]
@@ -60,14 +52,9 @@ pub struct FieldDefinition {
     pub type_ref: TypeReference,
     #[serde(default)]
     pub new_line: bool,
-    #[serde(default)]
-    pub align: u32,
-    pub bits: Option<u32>,
-    #[serde(default)]
-    pub padding: u32,
 }
 
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Eq, PartialEq)]
 pub struct CodecDefinition {
     pub name: String,
     #[serde(default)]
@@ -75,7 +62,7 @@ pub struct CodecDefinition {
     pub fields: Vec<FieldDefinition>,
 }
 
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Eq, PartialEq)]
 pub struct Document {
     pub name: String,
     #[serde(default)]

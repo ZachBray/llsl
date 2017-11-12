@@ -21,13 +21,47 @@ The protocol uses the following codecs to represent messages or message parts.
 
 When using a transport protocol that does not provide compatible framing, the Frame Length MUST be prepended to the RSocket Frame.
 
+```
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    length                     |
++-----------------------------------------------+
+```
+
 ### Frame Header
 
 RSocket frames begin with a RSocket Frame Header.
 
+```
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Stream Id                           |
++-----------+-+-+-----------------------------------------------+
+|Frame Type |I|M|
++-----------+-+-+
+```
+
 ### Setup
 
 The SETUP frame is sent by the client to inform the server of the parameters under which it desires to operate.
+
+```
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|L|
++-+-----------------------------+-------------------------------+
+|         Major Version         |         Minor Version         |
++-------------------------------+-------------------------------+
+|                 Time Between KEEPALIVE Frames                 |
++---------------------------------------------------------------+
+|                                                               |
++---------------------------------------------------------------+
+|                         Max Lifetime                          |
++---------------------------------------------------------------+
+```
 
 ## Enumerations
 
