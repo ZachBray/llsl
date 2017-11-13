@@ -83,16 +83,31 @@ impl<'a> TransformContext<'a> {
         }
     }
 
+    fn type_alignment(type_ref: &TypeReference) -> u32 {
+        match type_ref {
+            &TypeReference::Unsigned { align, .. } => align,
+            &TypeReference::Bool => 0,
+            &TypeReference::Custom { .. } => 0,
+        }
+    }
+
     fn build_diagram(&mut self, fields: &'a Vec<FieldDefinition>) -> Try<String> {
         let mut diagram = Diagram::new();
+        let mut offset = 0;
         for def in fields {
+            let alignment = TransformContext::type_alignment(&def.type_ref);
+            if alignment > 1 {
+                let alignment_padding = (alignment - offset) % alignment;
+                diagram.pad('/', alignment_padding);
+            }
             if def.new_line {
                 diagram.align_word();
             }
             let padding = TransformContext::type_padding(&def.type_ref);
-            diagram.pad(padding);
+            diagram.pad('0', padding);
             let bits = self.field_bits(def)?;
             diagram.append(def.name.to_owned(), bits - padding);
+            offset += bits;
         }
         Ok(diagram.draw())
     }

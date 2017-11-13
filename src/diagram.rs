@@ -116,13 +116,18 @@ impl Diagram {
         }
     }
 
-    pub fn pad(&mut self, bits: u32) {
+    pub fn pad(&mut self, symbol: char, bits: u32) {
         if bits > 0 {
             let mut section = String::new();
             for _ in 0..bits {
-                section += "0 ";
+                section.push(symbol);
+                section.push(' ');
             }
-            self.append(section, bits);
+            let mut remaining: &str = &section;
+            while let Some(r) = self.current_word().append(remaining) {
+                remaining = r;
+                self.words.push(Word::new());
+            }
         }
     }
 
