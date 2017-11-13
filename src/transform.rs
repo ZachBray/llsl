@@ -75,14 +75,24 @@ impl<'a> TransformContext<'a> {
 
     }
 
+    fn type_padding(type_ref: &TypeReference) -> u32 {
+        match type_ref {
+            &TypeReference::Unsigned { padding, .. } => padding,
+            &TypeReference::Bool => 0,
+            &TypeReference::Custom { .. } => 0,
+        }
+    }
+
     fn build_diagram(&mut self, fields: &'a Vec<FieldDefinition>) -> Try<String> {
         let mut diagram = Diagram::new();
         for def in fields {
             if def.new_line {
                 diagram.align_word();
             }
+            let padding = TransformContext::type_padding(&def.type_ref);
+            diagram.pad(padding);
             let bits = self.field_bits(def)?;
-            diagram.append(def.name.to_owned(), bits);
+            diagram.append(def.name.to_owned(), bits - padding);
         }
         Ok(diagram.draw())
     }

@@ -37,7 +37,7 @@ RSocket frames begin with a RSocket Frame Header.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           Stream Id                           |
+|0|                          Stream Id                          |
 +-----------+-+-+-----------------------------------------------+
 |Frame Type |I|M|
 +-----------+-+-+
@@ -55,9 +55,9 @@ The SETUP frame is sent by the client to inform the server of the parameters und
 +-+-----------------------------+-------------------------------+
 |         Major Version         |         Minor Version         |
 +-------------------------------+-------------------------------+
-|                 Time Between KEEPALIVE Frames                 |
+|0|                Time Between KEEPALIVE Frames                |
 +                               +-------------------------------+
-|                               |          Max Lifetime         |
+|                               |0|         Max Lifetime        |
 +-------------------------------+                               +
 |                                                               |
 +---------------------------------------------------------------+

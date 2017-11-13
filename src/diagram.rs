@@ -9,6 +9,12 @@ static HEADER: &'static str = "
 
 static WORD_CHAR_COUNT: usize = 65;
 
+#[derive(Eq, PartialEq)]
+enum SplitMode {
+    NoSplit,
+    SplitAtEndOfSegment,
+}
+
 struct Word {
     content: String,
     splits: BitSet,
@@ -22,7 +28,7 @@ impl Word {
         }
     }
 
-    fn append<'a>(&mut self, segment: &'a str) -> Option<&'a str> {
+    fn append<'a>(&mut self, segment: &'a str, mode: SplitMode) -> Option<&'a str> {
         let available_size = WORD_CHAR_COUNT - min(self.content.len(), WORD_CHAR_COUNT);
         if available_size == 0 {
             Some(segment)
@@ -35,7 +41,7 @@ impl Word {
             let requires_separator = is_eow || !has_remaining;
             if requires_separator {
                 self.content.pop(); // Padding character is ignored and replaced with a pipe
-                if !has_remaining {
+                if !has_remaining && mode == SplitMode::SplitAtEndOfSegment {
                     self.splits.insert(self.content.len());
                 }
                 self.content += "|";
@@ -110,9 +116,27 @@ impl Diagram {
         Diagram::truncate_section(&mut section, title_size);
         Diagram::pad_section(&mut section, title_size, section_size);
         let mut remaining: &str = &section;
-        while let Some(r) = self.current_word().append(remaining) {
+        while let Some(r) = self.current_word().append(
+            remaining,
+            SplitMode::SplitAtEndOfSegment,
+        )
+        {
             remaining = r;
             self.words.push(Word::new());
+        }
+    }
+
+    pub fn pad(&mut self, bits: u32) {
+        if bits > 0 {
+            let mut section = String::new();
+            for _ in 0..bits {
+                section += "0 ";
+            }
+            let mut remaining: &str = &section;
+            while let Some(r) = self.current_word().append(remaining, SplitMode::NoSplit) {
+                remaining = r;
+                self.words.push(Word::new());
+            }
         }
     }
 

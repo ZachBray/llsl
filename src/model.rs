@@ -17,7 +17,7 @@ impl Identifier {
             camel_case: string_morph::to_camel_case(original),
             pascal_case: string_morph::to_pascal_case(original),
             snake_case: string_morph::to_snake_case(original),
-            upper_snake_case: string_morph::to_snake_case(original),
+            upper_snake_case: string_morph::to_snake_caps_case(original),
             kebab_case: string_morph::to_kebab_case(original),
         }
     }
