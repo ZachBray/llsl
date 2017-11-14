@@ -91,10 +91,11 @@ impl<'a> TransformContext<'a> {
         }
     }
 
-    fn build_diagram(&mut self, fields: &'a Vec<FieldDefinition>) -> Try<String> {
+    fn transform_codec(&mut self, def: &'a CodecDefinition) -> Try<Codec> {
         let mut diagram = Diagram::new();
         let mut offset = 0;
-        for def in fields {
+        let mut fields = vec![];
+        for def in &def.fields {
             let alignment = TransformContext::type_alignment(&def.type_ref);
             if alignment > 1 {
                 let alignment_padding = (alignment - offset) % alignment;
@@ -106,17 +107,29 @@ impl<'a> TransformContext<'a> {
             let padding = TransformContext::type_padding(&def.type_ref);
             diagram.pad('0', padding);
             let bits = self.field_bits(def)?;
-            diagram.append(def.name.to_owned(), bits - padding);
+            let used_bits = bits - padding;
+            let title_size = diagram.append(def.name.to_owned(), used_bits);
+            let diagram_alias = def.name[..title_size].to_owned();
+            let diagram_alias_remainder = def.name[title_size..].to_owned();
+            let field = Field {
+                name: Identifier::new(&def.name),
+                description: def.description.to_owned(),
+                diagram_alias,
+                diagram_alias_remainder,
+                offset,
+                padded_offset: offset + padding,
+                bits,
+                used_bits,
+                padding,
+            };
+            fields.push(field);
             offset += bits;
         }
-        Ok(diagram.draw())
-    }
-
-    fn transform_codec(&mut self, def: &'a CodecDefinition) -> Try<Codec> {
         Ok(Codec {
             name: Identifier::new(&def.name),
             description: def.description.to_owned(),
-            diagram: self.build_diagram(&def.fields)?,
+            diagram: diagram.draw(),
+            fields,
         })
     }
 

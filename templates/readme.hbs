@@ -23,7 +23,14 @@ The protocol uses the following codecs to represent messages or message parts.
 
 ```{{{diagram}}}```
 
+| Field | Offset (bits) | Size (bits) | Description |
+| :---- | ------------: | ----------: | :---------- |
+{{#each fields ~}}
+| <ins>**{{{diagram_alias}}}**</ins>{{{diagram_alias_remainder}}} | `{{{offset}}}` | `{{{used_bits}}}` | {{{description}}} |
+{{/each}}
+
 {{/each ~}}
+
 
 ## Enumerations
 
@@ -35,9 +42,9 @@ The protocol uses the following values to represent enumeration values.
 {{{description}}}
 
 | Type | Value | Description |
-| :--- | :---- | :---------- |
+| :--- | ----: | :---------- |
 {{#each cases ~}}
 | _{{{name.original}}}_ | `{{{value.hex}}}` | {{{description}}} |
-{{/each ~}}
+{{/each}}
 
 {{/each ~}}

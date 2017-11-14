@@ -53,10 +53,24 @@ pub struct Enum {
 }
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
+pub struct Field {
+    pub name: Identifier,
+    pub diagram_alias: String,
+    pub diagram_alias_remainder: String,
+    pub description: String,
+    pub offset: u32,
+    pub padded_offset: u32,
+    pub bits: u32,
+    pub used_bits: u32,
+    pub padding: u32,
+}
+
+#[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 pub struct Codec {
     pub name: Identifier,
     pub description: String,
     pub diagram: String,
+    pub fields: Vec<Field>,
 }
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]

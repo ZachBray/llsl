@@ -101,19 +101,22 @@ impl Diagram {
         self.words.push(Word::new());
     }
 
-    pub fn append(&mut self, mut section: String, bits: u32) {
+    pub fn append(&mut self, mut section: String, bits: u32) -> usize {
         let section_size = bits as usize * 2;
-        let title_size = min(
+        let desired_title_size = min(
             section_size - 1,
             self.current_word().suggest_max_title_size(),
         );
-        Diagram::truncate_section(&mut section, title_size);
-        Diagram::pad_section(&mut section, title_size, section_size);
+        Diagram::truncate_section(&mut section, desired_title_size);
+        let actual_title_size = section.len();
+        section.to_owned();
+        Diagram::pad_section(&mut section, desired_title_size, section_size);
         let mut remaining: &str = &section;
         while let Some(r) = self.current_word().append(remaining) {
             remaining = r;
             self.words.push(Word::new());
         }
+        actual_title_size
     }
 
     pub fn pad(&mut self, symbol: char, bits: u32) {
