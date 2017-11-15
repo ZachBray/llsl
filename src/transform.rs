@@ -75,40 +75,26 @@ impl<'a> TransformContext<'a> {
 
     }
 
-    fn type_padding(type_ref: &TypeReference) -> u32 {
-        match type_ref {
-            &TypeReference::Unsigned { padding, .. } => padding,
-            &TypeReference::Bool => 0,
-            &TypeReference::Custom { .. } => 0,
-        }
-    }
-
-    fn type_alignment(type_ref: &TypeReference) -> u32 {
-        match type_ref {
-            &TypeReference::Unsigned { align, .. } => align,
-            &TypeReference::Bool => 0,
-            &TypeReference::Custom { .. } => 0,
-        }
-    }
-
     fn transform_codec(&mut self, def: &'a CodecDefinition) -> Try<Codec> {
         let mut diagram = Diagram::new();
         let mut offset = 0;
         let mut fields = vec![];
         for def in &def.fields {
-            let alignment = TransformContext::type_alignment(&def.type_ref);
-            if alignment > 1 {
-                let alignment_padding = (alignment - offset) % alignment;
-                diagram.pad('/', alignment_padding);
-            }
+            offset += def.skip; // Skip before calculating alignment
+            let alignment_padding = if def.alignment > 0 {
+                (def.alignment - offset) % def.alignment
+            } else {
+                0
+            };
+            diagram.pad('/', def.skip + alignment_padding);
+            offset += alignment_padding; // Add alignment padding to offset
             if def.new_line {
                 diagram.align_word();
             }
-            let padding = TransformContext::type_padding(&def.type_ref);
-            diagram.pad('0', padding);
+            diagram.pad('0', def.padding);
+            offset += def.padding; // Add padding to offset
             let bits = self.field_bits(def)?;
-            let used_bits = bits - padding;
-            let title_size = diagram.append(def.name.to_owned(), used_bits);
+            let title_size = diagram.append(def.name.to_owned(), bits);
             let diagram_alias = def.name[..title_size].to_owned();
             let diagram_alias_remainder = def.name[title_size..].to_owned();
             let field = Field {
@@ -117,10 +103,7 @@ impl<'a> TransformContext<'a> {
                 diagram_alias,
                 diagram_alias_remainder,
                 offset,
-                padded_offset: offset + padding,
                 bits,
-                used_bits,
-                padding,
             };
             fields.push(field);
             offset += bits;

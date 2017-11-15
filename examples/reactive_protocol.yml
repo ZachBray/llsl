@@ -23,9 +23,7 @@ codecs:
     When using a transport protocol that does not provide compatible framing, the Frame Length MUST be prepended to the RSocket Frame.
   fields:
   - name: length
-    type:
-      kind: unsigned
-      bits: 24
+    type: 24u
     description: >-
       Unsigned 24-bit integer representing the length of Frame in bytes.
       Excluding the Frame Length field.
@@ -35,28 +33,22 @@ codecs:
     RSocket frames begin with a RSocket Frame Header.
   fields:
   - name: Stream Id
-    type:
-      kind: unsigned
-      padding: 1
-      bits: 32
+    padding: 1
+    type: 31u
     description: >-
       Unsigned 31-bit integer representing the stream Identifier for this frame or
       0 to indicate the entire connection.
 
   - name: Frame Type
-    type:
-      kind: custom
-      ref: Frame Type
+    type: Frame Type
     description: Type of Frame.
 
   - name: Ignore
-    type:
-      kind: bool
+    type: bool
     description: Ignore frame if not understood
 
   - name: Metadata
-    type:
-      kind: bool
+    type: bool
     description: Metadata present
 
 - name: Setup
@@ -65,38 +57,29 @@ codecs:
     under which it desires to operate.
   fields:
   - name: Lease
-    type:
-      kind: bool
+    type: bool
     description: Will honor LEASE (or not).
 
   - name: Major Version
-    type:
-      kind: unsigned
-      bits: 16
-      align: 16
+    alignment: 16
+    type: 16u
     description: Unsigned 16-bit integer of Major version number of the protocol.
     new_line: true
 
   - name: Minor Version
-    type:
-      kind: unsigned
-      bits: 16
+    type: 16u
     description: Unsigned 16-bit integer of Minor version number of the protocol.
 
   - name: Time Between KEEPALIVE Frames
-    type:
-      kind: unsigned
-      padding: 1
-      bits: 48 # TODO should be 32 but using this for testing
+    padding: 1
+    type: 31u
     description: >-
       Unsigned 31-bit integer of Time (in milliseconds) between KEEPALIVE frames
       that the client will send. Value MUST be > 0.
 
   - name: Max Lifetime
-    type:
-      kind: unsigned
-      padding: 1
-      bits: 48 # TODO should be 32
+    padding: 1
+    type: 31u
     description: >-
       Unsigned 31-bit integer of Time (in milliseconds) that a client will allow
       a server to not respond to a KEEPALIVE before it is assumed to be dead.

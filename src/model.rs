@@ -59,10 +59,7 @@ pub struct Field {
     pub diagram_alias_remainder: String,
     pub description: String,
     pub offset: u32,
-    pub padded_offset: u32,
     pub bits: u32,
-    pub used_bits: u32,
-    pub padding: u32,
 }
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
