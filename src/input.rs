@@ -29,9 +29,16 @@ pub struct EnumDefinition {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
+pub enum Offset {
+    Fixed { bits: u32 },
+    Evaluated { field_name: String },
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TypeReference {
     Bool,
     Unsigned { bits: u32 },
+    Blob { offset: Offset },
     Custom { name: String },
 }
 
@@ -40,6 +47,7 @@ impl TypeReference {
         match self {
             &TypeReference::Bool => None,
             &TypeReference::Unsigned { .. } => None,
+            &TypeReference::Blob { .. } => None,
             &TypeReference::Custom { ref name } => Some(name),
         }
     }
@@ -49,6 +57,8 @@ impl TypeReference {
             TypeReference::Bool
         } else if let Some(bits) = TypeReference::try_unsigned(token) {
             TypeReference::Unsigned { bits }
+        } else if let Some(offset) = TypeReference::try_blob(token) {
+            TypeReference::Blob { offset }
         } else {
             TypeReference::Custom { name: token.to_owned() }
         }
@@ -57,6 +67,19 @@ impl TypeReference {
     fn try_unsigned(token: &str) -> Option<u32> {
         if token.len() >= 2 && &token[token.len() - 1..] == "u" {
             token[..token.len() - 1].parse::<u32>().ok()
+        } else {
+            None
+        }
+    }
+
+    fn try_blob(token: &str) -> Option<Offset> {
+        if token.starts_with("@") {
+            let address = &token[1..];
+            address
+                .parse::<u32>()
+                .ok()
+                .map(|bits| Offset::Fixed { bits })
+                .or(Some(Offset::Evaluated { field_name: address.to_owned() }))
         } else {
             None
         }

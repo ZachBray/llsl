@@ -109,13 +109,29 @@ impl Diagram {
         );
         Diagram::truncate_section(&mut section, desired_title_size);
         let actual_title_size = section.len();
-        section.to_owned();
         Diagram::pad_section(&mut section, desired_title_size, section_size);
         let mut remaining: &str = &section;
         while let Some(r) = self.current_word().append(remaining) {
             remaining = r;
             self.words.push(Word::new());
         }
+        actual_title_size
+    }
+
+    pub fn append_unsized(&mut self, mut section: String) -> usize {
+        // Add unsized blob to new line if there isn't much space left
+        if self.current_word().is_full() || self.current_word().suggest_max_title_size() < 16 {
+            self.align_word();
+        }
+        let desired_title_size = self.current_word().suggest_max_title_size();
+        Diagram::truncate_section(&mut section, desired_title_size);
+        let actual_title_size = section.len();
+        Diagram::pad_section(&mut section, desired_title_size, desired_title_size);
+        let word = self.current_word();
+        word.append(&section);
+        word.content.pop();
+        word.content.pop();
+        word.content.push_str("...");
         actual_title_size
     }
 
@@ -161,7 +177,8 @@ impl Diagram {
         }
         if let Some(last_w) = last_word {
             diagram += "+";
-            for i in 1..last_w.content.len() - 1 {
+            let n = min(last_w.content.len() - 1, 64);
+            for i in 1..n {
                 let has_split = last_w.splits.contains(i);
                 diagram += if has_split { "+" } else { "-" };
             }

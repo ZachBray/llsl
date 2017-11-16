@@ -8,19 +8,31 @@ struct TransformContext<'a> {
     document: &'a Document,
     codecs_by_name: HashMap<&'a str, &'a CodecDefinition>,
     enums_by_name: HashMap<&'a str, &'a EnumDefinition>,
-    bits_by_name: HashMap<&'a str, u32>,
+    bits_by_name: HashMap<&'a str, Option<u32>>,
 }
 
-fn try_collect<In, Out, F>(mut iter: In, mut f: F) -> Try<Vec<Out>>
+fn try_fold<In, Out, F>(mut iter: In, seed: Out, mut f: F) -> Try<Out>
+where
+    In: Iterator,
+    F: FnMut(Out, In::Item) -> Try<Out>,
+{
+    let mut acc = seed;
+    while let Some(x) = iter.next() {
+        acc = f(acc, x)?;
+    }
+    Ok(acc)
+}
+
+
+fn try_collect<In, Out, F>(iter: In, mut f: F) -> Try<Vec<Out>>
 where
     In: Iterator,
     F: FnMut(In::Item) -> Try<Out>,
 {
-    let mut ys = vec![];
-    while let Some(x) = iter.next() {
-        ys.push(f(x)?);
-    }
-    Ok(ys)
+    try_fold(iter, vec![], |mut acc, x| {
+        acc.push(f(x)?);
+        Ok(acc)
+    })
 }
 
 impl<'a> TransformContext<'a> {
@@ -43,19 +55,23 @@ impl<'a> TransformContext<'a> {
         }
     }
 
-    fn field_bits(&mut self, def: &'a FieldDefinition) -> Try<u32> {
+    fn field_bits(&mut self, def: &'a FieldDefinition) -> Try<Option<u32>> {
         match &def.type_ref {
-            &TypeReference::Bool => Ok(1),
-            &TypeReference::Unsigned { bits, .. } => Ok(bits),
+            &TypeReference::Bool => Ok(Some(1)),
+            &TypeReference::Unsigned { bits, .. } => Ok(Some(bits)),
+            &TypeReference::Blob { .. } => Ok(None),
             &TypeReference::Custom { ref name } => self.type_bits(&name),
         }
     }
 
-    fn codec_bits(&mut self, def: &'a CodecDefinition) -> Try<u32> {
-        def.fields.iter().map(|f| self.field_bits(f)).sum()
+    fn codec_bits(&mut self, def: &'a CodecDefinition) -> Try<Option<u32>> {
+        try_fold(def.fields.iter(), Some(0), |maybe_acc, f| {
+            let maybe_bits = self.field_bits(f)?;
+            Ok(maybe_acc.and_then(|acc| maybe_bits.map(|bits| bits + acc)))
+        })
     }
 
-    fn type_bits(&mut self, name: &'a str) -> Try<u32> {
+    fn type_bits(&mut self, name: &'a str) -> Try<Option<u32>> {
         if let Some(bits) = self.bits_by_name.get(name).cloned() {
             Ok(bits)
         } else {
@@ -65,7 +81,7 @@ impl<'a> TransformContext<'a> {
                 self.codecs_by_name.insert(name, codec);
                 Ok(bits)
             } else if let Some(e) = self.enums_by_name.get(name) {
-                Ok(e.bits)
+                Ok(Some(e.bits))
             } else {
                 Err(ErrorCode::FailedToLocateType(name.to_owned()))
             }?;
@@ -75,39 +91,51 @@ impl<'a> TransformContext<'a> {
 
     }
 
+    fn transform_field(
+        &mut self,
+        diagram: &mut Diagram,
+        mut offset: u32,
+        def: &'a FieldDefinition,
+    ) -> Try<Field> {
+        offset += def.skip; // Skip before calculating alignment
+        let alignment_padding = if def.alignment > 0 {
+            (def.alignment - offset) % def.alignment
+        } else {
+            0
+        };
+        diagram.pad('/', def.skip + alignment_padding);
+        offset += alignment_padding; // Add alignment padding to offset
+        if def.new_line {
+            diagram.align_word();
+        }
+        diagram.pad('0', def.padding);
+        offset += def.padding; // Add padding to offset
+        let bits = self.field_bits(def)?;
+        let title_size = match bits {
+            Some(bits) => diagram.append(def.name.to_owned(), bits),
+            None => diagram.append_unsized(def.name.to_owned()),
+        };
+        let diagram_alias = def.name[..title_size].to_owned();
+        let diagram_alias_remainder = def.name[title_size..].to_owned();
+        Ok(Field {
+            name: Identifier::new(&def.name),
+            type_ref: def.type_ref.get_custom_name().map(|n| Identifier::new(n)),
+            description: def.description.to_owned(),
+            diagram_alias,
+            diagram_alias_remainder,
+            offset,
+            bits,
+        })
+    }
+
     fn transform_codec(&mut self, def: &'a CodecDefinition) -> Try<Codec> {
         let mut diagram = Diagram::new();
         let mut offset = 0;
         let mut fields = vec![];
         for def in &def.fields {
-            offset += def.skip; // Skip before calculating alignment
-            let alignment_padding = if def.alignment > 0 {
-                (def.alignment - offset) % def.alignment
-            } else {
-                0
-            };
-            diagram.pad('/', def.skip + alignment_padding);
-            offset += alignment_padding; // Add alignment padding to offset
-            if def.new_line {
-                diagram.align_word();
-            }
-            diagram.pad('0', def.padding);
-            offset += def.padding; // Add padding to offset
-            let bits = self.field_bits(def)?;
-            let title_size = diagram.append(def.name.to_owned(), bits);
-            let diagram_alias = def.name[..title_size].to_owned();
-            let diagram_alias_remainder = def.name[title_size..].to_owned();
-            let field = Field {
-                name: Identifier::new(&def.name),
-                type_ref: def.type_ref.get_custom_name().map(|n| Identifier::new(n)),
-                description: def.description.to_owned(),
-                diagram_alias,
-                diagram_alias_remainder,
-                offset,
-                bits,
-            };
+            let field = self.transform_field(&mut diagram, offset, def)?;
+            offset = field.offset + field.bits.unwrap_or(0);
             fields.push(field);
-            offset += bits;
         }
         Ok(Codec {
             name: Identifier::new(&def.name),

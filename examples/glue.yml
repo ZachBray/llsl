@@ -57,6 +57,8 @@ codecs:
     type: Frame Type
   - name: Session Id
     type: 24u # TODO u is backwards
+  - name: Payload
+    type: "@0"
 
 - name: Acknowledge
   fields:

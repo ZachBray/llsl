@@ -33,12 +33,15 @@ The protocol uses the following codecs to represent messages or message parts.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |     Type      |                  Session Id                   |
 +---------------+-----------------------------------------------+
+|                            Payload                           ...
++---------------------------------------------------------------+
 ```
 
 | Field | Type | Offset (bits) | Size (bits) | Description |
 | :---- | :--- | ------------: | ----------: | :---------- |
 | <ins>**Type**</ins> | [Frame Type](#frame-type) | `0` | `8` |  |
 | <ins>**Session Id**</ins> | | `8` | `24` |  |
+| <ins>**Payload**</ins> | | `32` | `` |  |
 
 
 ### Acknowledge
