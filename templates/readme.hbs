@@ -23,10 +23,14 @@ The protocol uses the following codecs to represent messages or message parts.
 
 ```{{{diagram}}}```
 
-| Field | Offset (bits) | Size (bits) | Description |
-| :---- | ------------: | ----------: | :---------- |
+| Field | Type | Offset (bits) | Size (bits) | Description |
+| :---- | :--- | ------------: | ----------: | :---------- |
 {{#each fields ~}}
-| <ins>**{{{diagram_alias}}}**</ins>{{{diagram_alias_remainder}}} | `{{{offset}}}` | `{{{bits}}}` | {{{description}}} |
+{{#if type_ref ~}}
+| <ins>**{{{diagram_alias}}}**</ins>{{{diagram_alias_remainder}}} | [{{{type_ref.original}}}](#{{{type_ref.kebab_case}}}) | `{{{offset}}}` | `{{{bits}}}` | {{{description}}} |
+{{else ~}}
+| <ins>**{{{diagram_alias}}}**</ins>{{{diagram_alias_remainder}}} | | `{{{offset}}}` | `{{{bits}}}` | {{{description}}} |
+{{/if ~}}
 {{/each}}
 
 {{/each ~}}

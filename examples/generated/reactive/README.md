@@ -29,9 +29,9 @@ When using a transport protocol that does not provide compatible framing, the Fr
 +-----------------------------------------------+
 ```
 
-| Field | Offset (bits) | Size (bits) | Description |
-| :---- | ------------: | ----------: | :---------- |
-| <ins>**length**</ins> | `0` | `24` | Unsigned 24-bit integer representing the length of Frame in bytes. Excluding the Frame Length field. |
+| Field | Type | Offset (bits) | Size (bits) | Description |
+| :---- | :--- | ------------: | ----------: | :---------- |
+| <ins>**length**</ins> | | `0` | `24` | Unsigned 24-bit integer representing the length of Frame in bytes. Excluding the Frame Length field. |
 
 
 ### Frame Header
@@ -48,12 +48,12 @@ RSocket frames begin with a RSocket Frame Header.
 +-----------+-+-+
 ```
 
-| Field | Offset (bits) | Size (bits) | Description |
-| :---- | ------------: | ----------: | :---------- |
-| <ins>**Stream Id**</ins> | `1` | `31` | Unsigned 31-bit integer representing the stream Identifier for this frame or 0 to indicate the entire connection. |
-| <ins>**Frame Type**</ins> | `32` | `6` | Type of Frame. |
-| <ins>**I**</ins>gnore | `38` | `1` | Ignore frame if not understood |
-| <ins>**M**</ins>etadata | `39` | `1` | Metadata present |
+| Field | Type | Offset (bits) | Size (bits) | Description |
+| :---- | :--- | ------------: | ----------: | :---------- |
+| <ins>**Stream Id**</ins> | | `1` | `31` | Unsigned 31-bit integer representing the stream Identifier for this frame or 0 to indicate the entire connection. |
+| <ins>**Frame Type**</ins> | [Frame Type](#frame-type) | `32` | `6` | Type of Frame. |
+| <ins>**I**</ins>gnore | | `38` | `1` | Ignore frame if not understood |
+| <ins>**M**</ins>etadata | | `39` | `1` | Metadata present |
 
 
 ### Setup
@@ -74,13 +74,13 @@ The SETUP frame is sent by the client to inform the server of the parameters und
 +-+-------------------------------------------------------------+
 ```
 
-| Field | Offset (bits) | Size (bits) | Description |
-| :---- | ------------: | ----------: | :---------- |
-| <ins>**L**</ins>ease | `0` | `1` | Will honor LEASE (or not). |
-| <ins>**Major Version**</ins> | `16` | `16` | Unsigned 16-bit integer of Major version number of the protocol. |
-| <ins>**Minor Version**</ins> | `32` | `16` | Unsigned 16-bit integer of Minor version number of the protocol. |
-| <ins>**Time Between KEEPALIVE Frames**</ins> | `49` | `31` | Unsigned 31-bit integer of Time (in milliseconds) between KEEPALIVE frames that the client will send. Value MUST be > 0. |
-| <ins>**Max Lifetime**</ins> | `81` | `31` | Unsigned 31-bit integer of Time (in milliseconds) that a client will allow a server to not respond to a KEEPALIVE before it is assumed to be dead. Value MUST be > 0. |
+| Field | Type | Offset (bits) | Size (bits) | Description |
+| :---- | :--- | ------------: | ----------: | :---------- |
+| <ins>**L**</ins>ease | | `0` | `1` | Will honor LEASE (or not). |
+| <ins>**Major Version**</ins> | | `16` | `16` | Unsigned 16-bit integer of Major version number of the protocol. |
+| <ins>**Minor Version**</ins> | | `32` | `16` | Unsigned 16-bit integer of Minor version number of the protocol. |
+| <ins>**Time Between KEEPALIVE Frames**</ins> | | `49` | `31` | Unsigned 31-bit integer of Time (in milliseconds) between KEEPALIVE frames that the client will send. Value MUST be > 0. |
+| <ins>**Max Lifetime**</ins> | | `81` | `31` | Unsigned 31-bit integer of Time (in milliseconds) that a client will allow a server to not respond to a KEEPALIVE before it is assumed to be dead. Value MUST be > 0. |
 
 
 ## Enumerations

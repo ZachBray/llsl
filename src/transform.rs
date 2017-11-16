@@ -99,6 +99,7 @@ impl<'a> TransformContext<'a> {
             let diagram_alias_remainder = def.name[title_size..].to_owned();
             let field = Field {
                 name: Identifier::new(&def.name),
+                type_ref: def.type_ref.get_custom_name().map(|n| Identifier::new(n)),
                 description: def.description.to_owned(),
                 diagram_alias,
                 diagram_alias_remainder,

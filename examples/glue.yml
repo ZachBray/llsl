@@ -1,0 +1,105 @@
+name: Glue Protocol
+version: 0.0.1
+endianness: little
+
+# TODO
+# Draw object/entity model with sessions etc.
+
+enums:
+
+- name: Frame Type
+  bits: 8
+  cases:
+  - name: Establish Session
+    value: 0x01
+  - name: Acknowledge Session
+    value: 0x02
+  - name: Keep Alive
+    value: 0x03
+  - name: Error
+    value: 0x04
+  - name: Create
+    value: 0x05
+  - name: Send
+    value: 0x06
+  - name: Dispose
+    value: 0x07
+
+- name: Error Code
+  bits: 8
+  cases:
+  - name: Invalid Request
+    value: 0x01
+  - name: Application Error
+    value: 0x02
+  - name: Session Does Not Exist # E.g., because of a time out
+    value: 0x03
+  - name: Instance Does Not Exist # E.g., because of a time out
+    value: 0x04
+  - name: Method Does Not Exist # E.g., because of a time out
+    value: 0x05
+  - name: Version Mismatch
+    value: 0x06
+
+codecs:
+
+# Facets:
+#   - Correlation
+#   - Identity
+#   - Ownership/cancellation
+#   - Liveness/heart-beating
+
+# Instance.Method.Subscribe(dto, callbackObject)...Dispose()
+
+- name: Common Header
+  fields:
+  - name: Type
+    type: Frame Type
+  - name: Session Id
+    type: 24u # TODO u is backwards
+
+- name: Acknowledge
+  fields:
+  - name: Keep alive period
+    description: Time between keep alive frames in milliseconds
+    padding: 1
+    type: 31u
+
+- name: Create Header
+  fields:
+  - name: Service Type
+    type: 16u
+  - name: Major Version
+    type: 8u
+  - name: Minor Version
+    type: 8u
+  - name: Initial Message
+    type: Send Header
+    description: Instance Id describes the one that will be created by the service.
+
+- name: Send Header
+  fields:
+  - name: Instance
+    type: Instance Reference
+  - name: Method
+    type: Method Reference
+
+- name: Dispose Header
+  fields:
+  - name: Instance
+    type: Instance Reference
+
+- name: Error Header
+  fields:
+  - name: Code
+    type: Error Code
+
+- name: Instance Reference
+  fields:
+  - name: Id
+    type: 24u
+
+- name: Method Reference
+  fields:
+  - name: Id
+    type: 8u

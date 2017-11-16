@@ -30,12 +30,20 @@ pub struct EnumDefinition {
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TypeReference {
-    Unsigned { bits: u32 },
     Bool,
+    Unsigned { bits: u32 },
     Custom { name: String },
 }
 
 impl TypeReference {
+    pub fn get_custom_name(&self) -> Option<&str> {
+        match self {
+            &TypeReference::Bool => None,
+            &TypeReference::Unsigned { .. } => None,
+            &TypeReference::Custom { ref name } => Some(name),
+        }
+    }
+
     fn from_token(token: &str) -> Self {
         if token == "bool" {
             TypeReference::Bool
@@ -47,7 +55,7 @@ impl TypeReference {
     }
 
     fn try_unsigned(token: &str) -> Option<u32> {
-        if token.len() > 2 && &token[token.len() - 1..] == "u" {
+        if token.len() >= 2 && &token[token.len() - 1..] == "u" {
             token[..token.len() - 1].parse::<u32>().ok()
         } else {
             None
@@ -100,6 +108,7 @@ pub struct Document {
     pub description: String,
     pub version: String,
     pub endianness: Endianness,
+    #[serde(default)]
     pub enums: Vec<EnumDefinition>,
     pub codecs: Vec<CodecDefinition>,
 }

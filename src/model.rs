@@ -55,6 +55,7 @@ pub struct Enum {
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 pub struct Field {
     pub name: Identifier,
+    pub type_ref: Option<Identifier>,
     pub diagram_alias: String,
     pub diagram_alias_remainder: String,
     pub description: String,
