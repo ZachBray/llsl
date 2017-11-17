@@ -114,12 +114,22 @@ pub struct FieldDefinition {
     pub alignment: u32,
 }
 
+
+#[serde(deny_unknown_fields)]
+#[derive(Debug, Deserialize, Eq, PartialEq)]
+pub struct DiagramPrelude {
+    pub bits: u32,
+    pub title: String,
+}
+
 #[serde(deny_unknown_fields)]
 #[derive(Debug, Deserialize, Eq, PartialEq)]
 pub struct CodecDefinition {
     pub name: String,
     #[serde(default)]
     pub description: String,
+    #[serde(default)]
+    pub diagram_preludes: Vec<DiagramPrelude>,
     pub fields: Vec<FieldDefinition>,
 }
 
