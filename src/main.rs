@@ -17,6 +17,7 @@ mod model;
 mod diagram;
 mod transform;
 mod output;
+mod templates;
 
 use std::fs::File;
 use self::try::*;

@@ -4,15 +4,16 @@ use handlebars::Handlebars;
 use serde::Serialize;
 use super::try::*;
 use super::model::*;
+use super::templates;
 
-struct TemplateRenderer<'a> {
+pub struct TemplateRenderer<'a> {
     output_dir: &'a str,
     template: &'a Template,
     engine: &'a Handlebars,
 }
 
 impl<'a> TemplateRenderer<'a> {
-    fn render<T>(&self, output_path: &str, data: &T) -> Try<()>
+    pub fn render<T>(&self, output_path: &str, data: &T) -> Try<()>
     where
         T: Serialize,
     {
@@ -42,25 +43,15 @@ impl<'a> TemplateRenderer<'a> {
     }
 }
 
-struct Template {
-    name: &'static str,
-    content: &'static str,
-    render_targets: Box<Fn(&Protocol, &mut TemplateRenderer) -> Try<()>>,
-}
-
-fn templates() -> [Template; 1] {
-    [
-        Template {
-            name: "readme",
-            content: include_str!("../templates/readme.hbs"),
-            render_targets: Box::new(|protocol, renderer| renderer.render("README.md", protocol)),
-        },
-    ]
+pub struct Template {
+    pub name: &'static str,
+    pub content: &'static str,
+    pub render_targets: Box<Fn(&Protocol, &mut TemplateRenderer) -> Try<()>>,
 }
 
 pub fn generate_code(protocol: &Protocol, output_dir: &str) -> Try<()> {
     let engine = Handlebars::new();
-    for template in templates().iter() {
+    for template in templates::all().iter() {
         let mut renderer = TemplateRenderer {
             output_dir,
             engine: &engine,
