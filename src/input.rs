@@ -117,9 +117,9 @@ pub struct FieldDefinition {
 
 #[serde(deny_unknown_fields)]
 #[derive(Debug, Deserialize, Eq, PartialEq)]
-pub struct DiagramPrelude {
+pub struct Prelude {
     pub bits: u32,
-    pub title: String,
+    pub name: String,
 }
 
 #[serde(deny_unknown_fields)]
@@ -129,7 +129,7 @@ pub struct CodecDefinition {
     #[serde(default)]
     pub description: String,
     #[serde(default)]
-    pub diagram_preludes: Vec<DiagramPrelude>,
+    pub preludes: Vec<Prelude>,
     pub fields: Vec<FieldDefinition>,
 }
 

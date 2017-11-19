@@ -132,8 +132,9 @@ impl<'a> TransformContext<'a> {
         let mut diagram = Diagram::new();
         let mut offset = 0;
         let mut fields = vec![];
-        for prelude in &def.diagram_preludes {
-            diagram.append(prelude.title.to_owned(), prelude.bits);
+        for prelude in &def.preludes {
+            diagram.append(prelude.name.to_owned(), prelude.bits);
+            offset += prelude.bits;
         }
         for def in &def.fields {
             let field = self.transform_field(&mut diagram, offset, def)?;
