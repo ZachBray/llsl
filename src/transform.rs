@@ -99,7 +99,7 @@ impl<'a> TransformContext<'a> {
     ) -> Try<Field> {
         offset += def.skip; // Skip before calculating alignment
         let alignment_padding = if def.alignment > 0 {
-            def.alignment - (offset % def.alignment)
+            (def.alignment - (offset % def.alignment)) % def.alignment
         } else {
             0
         };
