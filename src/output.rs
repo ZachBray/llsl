@@ -51,13 +51,13 @@ pub struct Template {
 
 pub fn generate_code(protocol: &Protocol, output_dir: &str) -> Try<()> {
     let engine = Handlebars::new();
-    for template in templates::all().iter() {
+    let render_template = |template| {
         let mut renderer = TemplateRenderer {
             output_dir,
             engine: &engine,
-            template,
+            template: &template,
         };
-        (*template.render_targets)(protocol, &mut renderer)?;
-    }
-    Ok(())
+        (*template.render_targets)(protocol, &mut renderer)
+    };
+    templates::visit_all(&render_template)
 }
