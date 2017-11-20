@@ -1,6 +1,6 @@
 /** This is generated code */
 
-export const FrameType = {
+export default const FrameType = {
 
   /**
    * Reserved

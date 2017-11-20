@@ -1,0 +1,25 @@
+/** This is generated code */
+{{#each imports ~}}
+import {{{pascal_case}}} from "./{{{camel_case}}}.js";
+{{/each}}
+
+const {{{codec.name.pascal_case}}} = () => {
+  let offset = 0;
+  return {
+    wrap: (newOffset) => {
+      offset = newOffset;
+    },
+{{#each codec.fields ~}}
+{{#if type_info.is_bool}}
+    write{{{name.pascal_case}}}: (value) => {
+      // TODO
+    },
+    read{{{name.pascal_case}}}: () => {
+      // TODO
+    },
+{{/if}}
+{{/each}}
+  };
+};
+
+export default {{{codec.name.pascal_case}}}();

@@ -1,6 +1,6 @@
 use string_morph;
 
-#[derive(Debug, Serialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Serialize, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Identifier {
     pub original: String,
     pub camel_case: String,
@@ -53,9 +53,19 @@ pub struct Enum {
 }
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
+pub struct TypeInfo {
+    pub is_bool: bool,
+    pub is_unsigned: bool,
+    pub is_enum: bool,
+    pub is_codec: bool,
+    pub is_blob: bool,
+}
+
+#[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 pub struct Field {
     pub name: Identifier,
     pub type_ref: Option<Identifier>,
+    pub type_info: TypeInfo,
     pub diagram_alias: String,
     pub diagram_alias_remainder: String,
     pub description: String,

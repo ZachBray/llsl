@@ -91,6 +91,27 @@ impl<'a> TransformContext<'a> {
 
     }
 
+    fn transform_type_info(&mut self, type_ref: &'a TypeReference) -> TypeInfo {
+        let mut info = TypeInfo {
+            is_bool: false,
+            is_enum: false,
+            is_codec: false,
+            is_unsigned: false,
+            is_blob: false,
+        };
+        match type_ref {
+            &TypeReference::Bool => info.is_bool = true,
+            &TypeReference::Unsigned { .. } => info.is_unsigned = true,
+            &TypeReference::Custom { ref name } => {
+                let key: &str = name;
+                info.is_enum = self.enums_by_name.contains_key(&key);
+                info.is_codec = self.codecs_by_name.contains_key(&key);
+            }
+            &TypeReference::Blob { .. } => info.is_blob = true,
+        };
+        info
+    }
+
     fn transform_field(
         &mut self,
         diagram: &mut Diagram,
@@ -120,6 +141,7 @@ impl<'a> TransformContext<'a> {
         Ok(Field {
             name: Identifier::new(&def.name),
             type_ref: def.type_ref.get_custom_name().map(|n| Identifier::new(n)),
+            type_info: self.transform_type_info(&def.type_ref),
             description: def.description.to_owned(),
             diagram_alias,
             diagram_alias_remainder,

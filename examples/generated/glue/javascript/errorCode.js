@@ -1,6 +1,6 @@
 /** This is generated code */
 
-export const ErrorCode = {
+export default const ErrorCode = {
 
   /**
    * 
