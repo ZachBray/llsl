@@ -27,9 +27,9 @@ The protocol uses the following codecs to represent messages or message parts.
 | :---- | :--- | ------------: | ----------: | :---------- |
 {{#each fields ~}}
 {{#if type_ref ~}}
-| <ins>**{{{diagram_alias}}}**</ins>{{{diagram_alias_remainder}}} | [{{{type_ref.original}}}](#{{{type_ref.kebab_case}}}) | `{{{offset}}}` | `{{{bits}}}` | {{{description}}} |
+| <ins>**{{{diagram_info.alias}}}**</ins>{{{diagram_info.alias_remainder}}} | [{{{type_ref.original}}}](#{{{type_ref.kebab_case}}}) | `{{{diagram_info.padded_offset_bits}}}` | `{{{diagram_info.bits}}}` | {{{description}}} |
 {{else ~}}
-| <ins>**{{{diagram_alias}}}**</ins>{{{diagram_alias_remainder}}} | | `{{{offset}}}` | `{{{bits}}}` | {{{description}}} |
+| <ins>**{{{diagram_info.alias}}}**</ins>{{{diagram_info.alias_remainder}}} | | `{{{diagram_info.padded_offset_bits}}}` | `{{{diagram_info.bits}}}` | {{{description}}} |
 {{/if ~}}
 {{/each}}
 

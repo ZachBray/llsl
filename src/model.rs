@@ -55,10 +55,30 @@ pub struct Enum {
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 pub struct TypeInfo {
     pub is_bool: bool,
-    pub is_unsigned: bool,
+    pub is_byte: bool,
+    pub is_u16: bool,
+    pub is_u32: bool,
     pub is_enum: bool,
     pub is_codec: bool,
     pub is_blob: bool,
+}
+
+#[derive(Debug, Serialize, Clone, Eq, PartialEq)]
+pub struct MemoryLocation {
+    pub offset_bytes: u32,
+    pub bit_mask: Option<u32>,
+    pub shift: u32,
+}
+
+#[derive(Debug, Serialize, Clone, Eq, PartialEq)]
+pub struct DiagramInfo {
+    pub alias: String,
+    pub alias_remainder: String,
+    pub starts_new_line: bool,
+    pub padding_bits: u32,
+    pub offset_bits: u32,
+    pub padded_offset_bits: u32,
+    pub bits: Option<u32>,
 }
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
@@ -66,11 +86,9 @@ pub struct Field {
     pub name: Identifier,
     pub type_ref: Option<Identifier>,
     pub type_info: TypeInfo,
-    pub diagram_alias: String,
-    pub diagram_alias_remainder: String,
+    pub diagram_info: DiagramInfo,
     pub description: String,
-    pub offset: u32,
-    pub bits: Option<u32>,
+    pub location: MemoryLocation,
 }
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]

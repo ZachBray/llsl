@@ -29,59 +29,31 @@ pub struct EnumDefinition {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub enum Offset {
-    Fixed { bits: u32 },
-    Evaluated { field_name: String },
-}
-
-#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TypeReference {
     Bool,
-    Unsigned { bits: u32 },
-    Blob { offset: Offset },
+    Byte,
+    U16,
+    U32,
+    Blob,
     Custom { name: String },
 }
 
 impl TypeReference {
     pub fn get_custom_name(&self) -> Option<&str> {
         match self {
-            &TypeReference::Bool => None,
-            &TypeReference::Unsigned { .. } => None,
-            &TypeReference::Blob { .. } => None,
             &TypeReference::Custom { ref name } => Some(name),
+            _ => None,
         }
     }
 
     fn from_token(token: &str) -> Self {
-        if token == "bool" {
-            TypeReference::Bool
-        } else if let Some(bits) = TypeReference::try_unsigned(token) {
-            TypeReference::Unsigned { bits }
-        } else if let Some(offset) = TypeReference::try_blob(token) {
-            TypeReference::Blob { offset }
-        } else {
-            TypeReference::Custom { name: token.to_owned() }
-        }
-    }
-
-    fn try_unsigned(token: &str) -> Option<u32> {
-        if token.len() >= 2 && &token[token.len() - 1..] == "u" {
-            token[..token.len() - 1].parse::<u32>().ok()
-        } else {
-            None
-        }
-    }
-
-    fn try_blob(token: &str) -> Option<Offset> {
-        if token.starts_with("@") {
-            let address = &token[1..];
-            address
-                .parse::<u32>()
-                .ok()
-                .map(|bits| Offset::Fixed { bits })
-                .or(Some(Offset::Evaluated { field_name: address.to_owned() }))
-        } else {
-            None
+        match token {
+            "bool" => TypeReference::Bool,
+            "byte" => TypeReference::Byte,
+            "u16" => TypeReference::U16,
+            "u32" => TypeReference::U32,
+            "blob" => TypeReference::Blob,
+            _ => TypeReference::Custom { name: token.to_owned() },
         }
     }
 }
@@ -107,11 +79,12 @@ pub struct FieldDefinition {
     #[serde(default)]
     pub new_line: bool,
     #[serde(default)]
-    pub padding: u32,
+    pub padding_bits: u32,
     #[serde(default)]
-    pub skip: u32,
+    pub ignore_first_bits: u32,
     #[serde(default)]
-    pub alignment: u32,
+    pub ignore_last_bits: u32,
+    pub offset_bytes: u32,
 }
 
 

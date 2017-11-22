@@ -23,7 +23,7 @@ impl Word {
     }
 
     fn append<'a>(&mut self, segment: &'a str) -> Option<&'a str> {
-        debug!("Appending formatted section to current word: {}", segment);
+        trace!("Appending formatted section to current word: {}", segment);
         let available_size = WORD_CHAR_COUNT - min(self.content.chars().count(), WORD_CHAR_COUNT);
         if available_size == 0 {
             Some(segment)
@@ -73,7 +73,7 @@ impl Diagram {
     }
 
     fn truncate_section(section: &mut String, size: usize) {
-        debug!("Truncating {} to {} chars", section, size);
+        trace!("Truncating {} to {} chars", section, size);
         if section.len() > size {
             if size > 2 {
                 // TODO support multi-byte encodings
@@ -88,7 +88,7 @@ impl Diagram {
 
     fn pad_section(section: &mut String, desired_title_size: usize, desired_size: usize) {
         if section.len() < desired_size {
-            debug!("Centering {} inside {} chars", section, desired_title_size);
+            trace!("Centering {} inside {} chars", section, desired_title_size);
             let padding = desired_title_size - min(section.len(), desired_title_size);
             let padding_before = padding / 2;
             let non_title_padding = desired_size - desired_title_size;
@@ -108,12 +108,12 @@ impl Diagram {
     }
 
     pub fn align_word(&mut self) {
-        debug!("Skipping rest of word");
+        trace!("Skipping rest of word");
         self.words.push(Word::new());
     }
 
     pub fn append(&mut self, mut section: String, bits: u32) -> usize {
-        debug!("Appending secion {} ({} bits)", section, bits);
+        trace!("Appending secion {} ({} bits)", section, bits);
         let section_size = bits as usize * 2;
         let desired_title_size = min(
             section_size - 1,
@@ -131,7 +131,7 @@ impl Diagram {
     }
 
     pub fn append_unsized(&mut self, mut section: String) -> usize {
-        debug!("Appending blob secion {}", section);
+        trace!("Appending blob secion {}", section);
         // Add unsized blob to new line if there isn't much space left
         if self.current_word().is_full() || self.current_word().suggest_max_title_size() < 16 {
             self.align_word();
@@ -149,7 +149,7 @@ impl Diagram {
     }
 
     pub fn pad(&mut self, symbol: char, bits: u32) {
-        debug!("Padding {} bits with {}", bits, symbol);
+        trace!("Padding {} bits with {}", bits, symbol);
         if bits > 0 {
             let mut section = String::new();
             for _ in 0..bits {
@@ -165,7 +165,7 @@ impl Diagram {
     }
 
     pub fn draw(&self) -> String {
-        debug!("Rendering");
+        trace!("Rendering");
         let mut diagram = HEADER.to_owned();
         let mut last_word: Option<&Word> = None;
         for current_word in &self.words {

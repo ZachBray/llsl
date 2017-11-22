@@ -11,6 +11,7 @@ pub enum ErrorCode {
     FailedToCreateOutputFile(io::Error),
     FailedToExecuteTemplate(handlebars::TemplateRenderError),
     FailedToLocateType(String),
+    FailedToLayoutDiagramDueToOverlappingFields(String),
 }
 
 /*
