@@ -108,6 +108,7 @@ impl<'a> TransformContext<'a> {
 
     fn transform_type_info(&mut self, type_ref: &'a TypeReference) -> TypeInfo {
         let mut info = TypeInfo {
+            kind: Identifier::new(""),
             is_bool: false,
             is_byte: false,
             is_u16: false,
@@ -117,16 +118,37 @@ impl<'a> TransformContext<'a> {
             is_blob: false,
         };
         match type_ref {
-            &TypeReference::Bool => info.is_bool = true,
-            &TypeReference::Byte => info.is_byte = true,
-            &TypeReference::U16 => info.is_u16 = true,
-            &TypeReference::U32 => info.is_u32 = true,
+            &TypeReference::Bool => {
+                info.kind = Identifier::new("bool");
+                info.is_bool = true;
+            }
+            &TypeReference::Byte => {
+                info.kind = Identifier::new("byte");
+                info.is_byte = true;
+            }
+            &TypeReference::U16 => {
+                info.kind = Identifier::new("u16");
+                info.is_u16 = true;
+            }
+            &TypeReference::U32 => {
+                info.kind = Identifier::new("u32");
+                info.is_u32 = true;
+            }
             &TypeReference::Custom { ref name } => {
                 let key: &str = name;
                 info.is_enum = self.enums_by_name.contains_key(&key);
+                if info.is_enum {
+                    info.kind = Identifier::new("enum");
+                }
                 info.is_codec = self.codecs_by_name.contains_key(&key);
+                if info.is_codec {
+                    info.kind = Identifier::new("codec");
+                }
             }
-            &TypeReference::Blob { .. } => info.is_blob = true,
+            &TypeReference::Blob { .. } => {
+                info.kind = Identifier::new("blob");
+                info.is_blob = true;
+            }
         };
         info
     }

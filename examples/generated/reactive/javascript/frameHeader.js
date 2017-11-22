@@ -10,18 +10,21 @@ const FrameHeader = () => {
     bitMask: 0b11111111111111111111111111111110, // 4294967294
     shift: 0,
   };
+
   let frameTypeSchema = {
     name: "Frame Type",
     offsetInBytes: 4,
     bitMask: 0b111111, // 63
     shift: 0,
   };
+
   let ignoreSchema = {
     name: "Ignore",
     offsetInBytes: 4,
     bitMask: 0b1000000, // 64
     shift: 6,
   };
+
   let metadataSchema = {
     name: "Metadata",
     offsetInBytes: 4,
@@ -29,39 +32,48 @@ const FrameHeader = () => {
     shift: 7,
   };
 
+
   let buffer;
-  let offset = 0;
+  let codecOffsetInBytes = 0;
 
   return {
-    wrap: (buf, newOffset) => {
-      buffer = buf;
-      offset = newOffset;
+    wrap: (newBuffer, newOffsetInBytes) => {
+      buffer = newBuffer;
+      codecOffsetInBytes = newOffsetInBytes;
     },
 
     writeStreamId: (value) => {
-      buffer.write(streamIdSchema, offset, value);
+      buffer.writeU32(streamIdSchema, codecOffsetInBytes, value);
     },
+
     readStreamId: () => {
-      return buffer.read(streamIdSchema, offset);
+      return buffer.readU32(streamIdSchema, codecOffsetInBytes);
     },
+
     writeFrameType: (value) => {
-      buffer.write(frameTypeSchema, offset, value);
+      buffer.writeEnum(frameTypeSchema, codecOffsetInBytes, value);
     },
+
     readFrameType: () => {
-      return buffer.read(frameTypeSchema, offset);
+      return buffer.readEnum(frameTypeSchema, codecOffsetInBytes);
     },
+
     writeIgnore: (value) => {
-      buffer.write(ignoreSchema, offset, value);
+      buffer.writeBool(ignoreSchema, codecOffsetInBytes, value);
     },
+
     readIgnore: () => {
-      return buffer.read(ignoreSchema, offset);
+      return buffer.readBool(ignoreSchema, codecOffsetInBytes);
     },
+
     writeMetadata: (value) => {
-      buffer.write(metadataSchema, offset, value);
+      buffer.writeBool(metadataSchema, codecOffsetInBytes, value);
     },
+
     readMetadata: () => {
-      return buffer.read(metadataSchema, offset);
+      return buffer.readBool(metadataSchema, codecOffsetInBytes);
     },
+
   };
 };
 

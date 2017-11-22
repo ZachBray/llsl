@@ -56,6 +56,7 @@ pub struct Enum {
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 pub struct TypeInfo {
+    pub kind: Identifier,
     pub is_bool: bool,
     pub is_byte: bool,
     pub is_u16: bool,

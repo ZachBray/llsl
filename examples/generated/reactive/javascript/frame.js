@@ -10,21 +10,24 @@ const Frame = () => {
     shift: 0,
   };
 
+
   let buffer;
-  let offset = 0;
+  let codecOffsetInBytes = 0;
 
   return {
-    wrap: (buf, newOffset) => {
-      buffer = buf;
-      offset = newOffset;
+    wrap: (newBuffer, newOffsetInBytes) => {
+      buffer = newBuffer;
+      codecOffsetInBytes = newOffsetInBytes;
     },
 
     writeLength: (value) => {
-      buffer.write(lengthSchema, offset, value);
+      buffer.writeU32(lengthSchema, codecOffsetInBytes, value);
     },
+
     readLength: () => {
-      return buffer.read(lengthSchema, offset);
+      return buffer.readU32(lengthSchema, codecOffsetInBytes);
     },
+
   };
 };
 
