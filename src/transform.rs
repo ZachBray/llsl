@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::cmp::min;
+use std::cmp::{min, max};
 use super::try::*;
 use super::input::*;
 use super::model::*;
@@ -12,19 +12,16 @@ struct TransformContext<'a> {
     bits_by_name: HashMap<&'a str, Option<u32>>,
 }
 
-fn create_bit_mask(bits: u32, ignore_first_bits: u32, ignore_last_bits: u32) -> Option<u32> {
-    if ignore_last_bits == 0 && ignore_last_bits == 0 {
-        None
-    } else {
-        let mut mask = 0;
-        for i in 0..bits {
-            let is_set = i > ignore_first_bits && bits - i > ignore_last_bits;
-            if is_set {
-                mask = mask | (1 << i);
-            }
+fn create_bit_mask(bits: u32, ignore_first_bits: u32, ignore_last_bits: u32) -> Unsigned {
+    let mut mask = 0;
+    let mask_size = max(bits, ignore_first_bits + ignore_last_bits + 1); // For booleans with ignore_first...
+    for i in 0..mask_size {
+        let is_set = i >= ignore_first_bits && mask_size - i > ignore_last_bits;
+        if is_set {
+            mask = mask | (1 << i);
         }
-        Some(mask)
     }
+    Unsigned::new(mask)
 }
 
 fn try_fold<In, Out, F>(mut iter: In, seed: Out, mut f: F) -> Try<Out>
@@ -161,13 +158,13 @@ impl<'a> TransformContext<'a> {
             },
             location: MemoryLocation {
                 offset_bytes: def.offset_bytes,
-                bit_mask: bits.and_then(|b| {
+                bit_mask: bits.map(|b| {
                     create_bit_mask(
                         b,
                         def.ignore_first_bits + def.padding_bits,
                         def.ignore_last_bits,
                     )
-                }),
+                }).unwrap_or(Unsigned::new(0)),
                 shift: def.ignore_first_bits,
             },
         })

@@ -27,13 +27,15 @@ impl Identifier {
 pub struct Unsigned {
     original: u32,
     hex: String,
+    binary: String,
 }
 
 impl Unsigned {
     pub fn new(original: u32) -> Self {
         Unsigned {
             original,
-            hex: format!("{:#X}", original),
+            hex: format!("{:#x}", original),
+            binary: format!("{:#b}", original),
         }
     }
 }
@@ -66,7 +68,7 @@ pub struct TypeInfo {
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 pub struct MemoryLocation {
     pub offset_bytes: u32,
-    pub bit_mask: Option<u32>,
+    pub bit_mask: Unsigned,
     pub shift: u32,
 }
 

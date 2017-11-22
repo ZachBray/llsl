@@ -4,21 +4,29 @@ import {{{pascal_case}}} from "./{{{camel_case}}}.js";
 {{/each}}
 
 const {{{codec.name.pascal_case}}} = () => {
+{{#each codec.fields }}
+  let {{{name.camel_case}}}Schema = {
+    name: "{{{name.original}}}",
+    offsetInBytes: {{{location.offset_bytes}}},
+    bitMask: {{{location.bit_mask.binary}}}, // {{{location.bit_mask.original}}}
+    shift: {{{location.shift}}},
+  };{{/each}}
+
+  let buffer;
   let offset = 0;
+
   return {
-    wrap: (newOffset) => {
+    wrap: (buf, newOffset) => {
+      buffer = buf;
       offset = newOffset;
     },
-{{#each codec.fields ~}}
-{{#if type_info.is_bool}}
+{{#each codec.fields}}
     write{{{name.pascal_case}}}: (value) => {
-      // TODO
+      buffer.write({{{name.camel_case}}}Schema, offset, value);
     },
     read{{{name.pascal_case}}}: () => {
-      // TODO
-    },
-{{/if}}
-{{/each}}
+      return buffer.read({{{name.camel_case}}}Schema, offset);
+    },{{/each}}
   };
 };
 
