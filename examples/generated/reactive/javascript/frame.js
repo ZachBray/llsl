@@ -1,9 +1,12 @@
 /** This is generated code */
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 
 
-const Frame = () => {
 
-  let lengthSchema = {
+var Frame = (function () {
+
+  var lengthSchema = {
     name: "length",
     offsetInBytes: 0,
     bitMask: 0b111111111111111111111111, // 16777215
@@ -11,24 +14,27 @@ const Frame = () => {
   };
 
 
-  let buffer;
-  let codecOffsetInBytes = 0;
-
-  return {
-    wrap: (newBuffer, newOffsetInBytes) => {
-      buffer = newBuffer;
-      codecOffsetInBytes = newOffsetInBytes;
-    },
-
-    writeLength: (value) => {
-      buffer.writeU32(lengthSchema, codecOffsetInBytes, value);
-    },
-
-    readLength: () => {
-      return buffer.readU32(lengthSchema, codecOffsetInBytes);
-    },
-
+  function Frame() {
+    this.buffer = undefined;
+    this.codecOffsetInBytes = -1;
   };
-};
 
-export default Frame();
+  Frame.prototype.wrap = function(newBuffer, newOffsetInBytes) {
+    this.buffer = newBuffer;
+    this.codecOffsetInBytes = newOffsetInBytes;
+  };
+
+
+  Object.defineProperty(Frame.prototype, "length", {
+    enumerable: true,
+    get: function() {
+      return this.buffer.readU32(lengthSchema, this.codecOffsetInBytes);
+    },
+    set: function(value) {
+      this.buffer.writeU32(lengthSchema, this.codecOffsetInBytes, value);
+    }
+  });
+
+})();
+
+exports.Frame = Frame;

@@ -1,11 +1,14 @@
 /** This is generated code */
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
 {{#each imports ~}}
-import {{{pascal_case}}} from "./{{{camel_case}}}.js";
+var {{{pascal_case}}} = require("./{{{camel_case}}}.js");
 {{/each}}
 
-const {{{codec.name.pascal_case}}} = () => {
+var {{{codec.name.pascal_case}}} = (function () {
 {{#each codec.fields }}
-  let {{{name.camel_case}}}Schema = {
+  var {{{name.camel_case}}}Schema = {
     name: "{{{name.original}}}",
     offsetInBytes: {{{location.offset_bytes}}},
     bitMask: {{{location.bit_mask.binary}}}, // {{{location.bit_mask.original}}}
@@ -13,24 +16,27 @@ const {{{codec.name.pascal_case}}} = () => {
   };
 {{/each}}
 
-  let buffer;
-  let codecOffsetInBytes = 0;
-
-  return {
-    wrap: (newBuffer, newOffsetInBytes) => {
-      buffer = newBuffer;
-      codecOffsetInBytes = newOffsetInBytes;
-    },
-{{#each codec.fields}}
-    write{{{name.pascal_case}}}: (value) => {
-      buffer.write{{{type_info.kind.pascal_case}}}({{{name.camel_case}}}Schema, codecOffsetInBytes, value);
-    },
-
-    read{{{name.pascal_case}}}: () => {
-      return buffer.read{{{type_info.kind.pascal_case}}}({{{name.camel_case}}}Schema, codecOffsetInBytes);
-    },
-{{/each}}
+  function {{{codec.name.pascal_case}}}() {
+    this.buffer = undefined;
+    this.codecOffsetInBytes = -1;
   };
-};
 
-export default {{{codec.name.pascal_case}}}();
+  {{{codec.name.pascal_case}}}.prototype.wrap = function(newBuffer, newOffsetInBytes) {
+    this.buffer = newBuffer;
+    this.codecOffsetInBytes = newOffsetInBytes;
+  };
+
+{{#each codec.fields}}
+  Object.defineProperty({{{../codec.name.pascal_case}}}.prototype, "{{{name.camel_case}}}", {
+    enumerable: true,
+    get: function() {
+      return this.buffer.read{{{type_info.kind.pascal_case}}}({{{name.camel_case}}}Schema, this.codecOffsetInBytes);
+    },
+    set: function(value) {
+      this.buffer.write{{{type_info.kind.pascal_case}}}({{{name.camel_case}}}Schema, this.codecOffsetInBytes, value);
+    }
+  });
+{{/each}}
+})();
+
+exports.{{{codec.name.pascal_case}}} = {{{codec.name.pascal_case}}};

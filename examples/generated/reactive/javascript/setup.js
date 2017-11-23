@@ -1,37 +1,40 @@
 /** This is generated code */
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 
 
-const Setup = () => {
 
-  let leaseSchema = {
+var Setup = (function () {
+
+  var leaseSchema = {
     name: "Lease",
     offsetInBytes: 0,
     bitMask: 0b1, // 1
     shift: 0,
   };
 
-  let majorVersionSchema = {
+  var majorVersionSchema = {
     name: "Major Version",
     offsetInBytes: 2,
     bitMask: 0b1111111111111111, // 65535
     shift: 0,
   };
 
-  let minorVersionSchema = {
+  var minorVersionSchema = {
     name: "Minor Version",
     offsetInBytes: 4,
     bitMask: 0b1111111111111111, // 65535
     shift: 0,
   };
 
-  let timeBetweenKEEPALIVEFramesSchema = {
+  var timeBetweenKEEPALIVEFramesSchema = {
     name: "Time Between KEEPALIVE Frames",
     offsetInBytes: 6,
     bitMask: 0b11111111111111111111111111111110, // 4294967294
     shift: 0,
   };
 
-  let maxLifetimeSchema = {
+  var maxLifetimeSchema = {
     name: "Max Lifetime",
     offsetInBytes: 10,
     bitMask: 0b11111111111111111111111111111110, // 4294967294
@@ -39,56 +42,67 @@ const Setup = () => {
   };
 
 
-  let buffer;
-  let codecOffsetInBytes = 0;
-
-  return {
-    wrap: (newBuffer, newOffsetInBytes) => {
-      buffer = newBuffer;
-      codecOffsetInBytes = newOffsetInBytes;
-    },
-
-    writeLease: (value) => {
-      buffer.writeBool(leaseSchema, codecOffsetInBytes, value);
-    },
-
-    readLease: () => {
-      return buffer.readBool(leaseSchema, codecOffsetInBytes);
-    },
-
-    writeMajorVersion: (value) => {
-      buffer.writeU16(majorVersionSchema, codecOffsetInBytes, value);
-    },
-
-    readMajorVersion: () => {
-      return buffer.readU16(majorVersionSchema, codecOffsetInBytes);
-    },
-
-    writeMinorVersion: (value) => {
-      buffer.writeU16(minorVersionSchema, codecOffsetInBytes, value);
-    },
-
-    readMinorVersion: () => {
-      return buffer.readU16(minorVersionSchema, codecOffsetInBytes);
-    },
-
-    writeTimeBetweenKEEPALIVEFrames: (value) => {
-      buffer.writeU32(timeBetweenKEEPALIVEFramesSchema, codecOffsetInBytes, value);
-    },
-
-    readTimeBetweenKEEPALIVEFrames: () => {
-      return buffer.readU32(timeBetweenKEEPALIVEFramesSchema, codecOffsetInBytes);
-    },
-
-    writeMaxLifetime: (value) => {
-      buffer.writeU32(maxLifetimeSchema, codecOffsetInBytes, value);
-    },
-
-    readMaxLifetime: () => {
-      return buffer.readU32(maxLifetimeSchema, codecOffsetInBytes);
-    },
-
+  function Setup() {
+    this.buffer = undefined;
+    this.codecOffsetInBytes = -1;
   };
-};
 
-export default Setup();
+  Setup.prototype.wrap = function(newBuffer, newOffsetInBytes) {
+    this.buffer = newBuffer;
+    this.codecOffsetInBytes = newOffsetInBytes;
+  };
+
+
+  Object.defineProperty(Setup.prototype, "lease", {
+    enumerable: true,
+    get: function() {
+      return this.buffer.readBool(leaseSchema, this.codecOffsetInBytes);
+    },
+    set: function(value) {
+      this.buffer.writeBool(leaseSchema, this.codecOffsetInBytes, value);
+    }
+  });
+
+  Object.defineProperty(Setup.prototype, "majorVersion", {
+    enumerable: true,
+    get: function() {
+      return this.buffer.readU16(majorVersionSchema, this.codecOffsetInBytes);
+    },
+    set: function(value) {
+      this.buffer.writeU16(majorVersionSchema, this.codecOffsetInBytes, value);
+    }
+  });
+
+  Object.defineProperty(Setup.prototype, "minorVersion", {
+    enumerable: true,
+    get: function() {
+      return this.buffer.readU16(minorVersionSchema, this.codecOffsetInBytes);
+    },
+    set: function(value) {
+      this.buffer.writeU16(minorVersionSchema, this.codecOffsetInBytes, value);
+    }
+  });
+
+  Object.defineProperty(Setup.prototype, "timeBetweenKEEPALIVEFrames", {
+    enumerable: true,
+    get: function() {
+      return this.buffer.readU32(timeBetweenKEEPALIVEFramesSchema, this.codecOffsetInBytes);
+    },
+    set: function(value) {
+      this.buffer.writeU32(timeBetweenKEEPALIVEFramesSchema, this.codecOffsetInBytes, value);
+    }
+  });
+
+  Object.defineProperty(Setup.prototype, "maxLifetime", {
+    enumerable: true,
+    get: function() {
+      return this.buffer.readU32(maxLifetimeSchema, this.codecOffsetInBytes);
+    },
+    set: function(value) {
+      this.buffer.writeU32(maxLifetimeSchema, this.codecOffsetInBytes, value);
+    }
+  });
+
+})();
+
+exports.Setup = Setup;

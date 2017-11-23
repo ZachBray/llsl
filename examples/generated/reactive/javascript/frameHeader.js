@@ -1,31 +1,34 @@
 /** This is generated code */
-import FrameType from "./frameType.js";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+
+var FrameType = require("./frameType.js");
 
 
-const FrameHeader = () => {
+var FrameHeader = (function () {
 
-  let streamIdSchema = {
+  var streamIdSchema = {
     name: "Stream Id",
     offsetInBytes: 0,
     bitMask: 0b11111111111111111111111111111110, // 4294967294
     shift: 0,
   };
 
-  let frameTypeSchema = {
+  var frameTypeSchema = {
     name: "Frame Type",
     offsetInBytes: 4,
     bitMask: 0b111111, // 63
     shift: 0,
   };
 
-  let ignoreSchema = {
+  var ignoreSchema = {
     name: "Ignore",
     offsetInBytes: 4,
     bitMask: 0b1000000, // 64
     shift: 6,
   };
 
-  let metadataSchema = {
+  var metadataSchema = {
     name: "Metadata",
     offsetInBytes: 4,
     bitMask: 0b10000000, // 128
@@ -33,48 +36,57 @@ const FrameHeader = () => {
   };
 
 
-  let buffer;
-  let codecOffsetInBytes = 0;
-
-  return {
-    wrap: (newBuffer, newOffsetInBytes) => {
-      buffer = newBuffer;
-      codecOffsetInBytes = newOffsetInBytes;
-    },
-
-    writeStreamId: (value) => {
-      buffer.writeU32(streamIdSchema, codecOffsetInBytes, value);
-    },
-
-    readStreamId: () => {
-      return buffer.readU32(streamIdSchema, codecOffsetInBytes);
-    },
-
-    writeFrameType: (value) => {
-      buffer.writeEnum(frameTypeSchema, codecOffsetInBytes, value);
-    },
-
-    readFrameType: () => {
-      return buffer.readEnum(frameTypeSchema, codecOffsetInBytes);
-    },
-
-    writeIgnore: (value) => {
-      buffer.writeBool(ignoreSchema, codecOffsetInBytes, value);
-    },
-
-    readIgnore: () => {
-      return buffer.readBool(ignoreSchema, codecOffsetInBytes);
-    },
-
-    writeMetadata: (value) => {
-      buffer.writeBool(metadataSchema, codecOffsetInBytes, value);
-    },
-
-    readMetadata: () => {
-      return buffer.readBool(metadataSchema, codecOffsetInBytes);
-    },
-
+  function FrameHeader() {
+    this.buffer = undefined;
+    this.codecOffsetInBytes = -1;
   };
-};
 
-export default FrameHeader();
+  FrameHeader.prototype.wrap = function(newBuffer, newOffsetInBytes) {
+    this.buffer = newBuffer;
+    this.codecOffsetInBytes = newOffsetInBytes;
+  };
+
+
+  Object.defineProperty(FrameHeader.prototype, "streamId", {
+    enumerable: true,
+    get: function() {
+      return this.buffer.readU32(streamIdSchema, this.codecOffsetInBytes);
+    },
+    set: function(value) {
+      this.buffer.writeU32(streamIdSchema, this.codecOffsetInBytes, value);
+    }
+  });
+
+  Object.defineProperty(FrameHeader.prototype, "frameType", {
+    enumerable: true,
+    get: function() {
+      return this.buffer.readEnum(frameTypeSchema, this.codecOffsetInBytes);
+    },
+    set: function(value) {
+      this.buffer.writeEnum(frameTypeSchema, this.codecOffsetInBytes, value);
+    }
+  });
+
+  Object.defineProperty(FrameHeader.prototype, "ignore", {
+    enumerable: true,
+    get: function() {
+      return this.buffer.readBool(ignoreSchema, this.codecOffsetInBytes);
+    },
+    set: function(value) {
+      this.buffer.writeBool(ignoreSchema, this.codecOffsetInBytes, value);
+    }
+  });
+
+  Object.defineProperty(FrameHeader.prototype, "metadata", {
+    enumerable: true,
+    get: function() {
+      return this.buffer.readBool(metadataSchema, this.codecOffsetInBytes);
+    },
+    set: function(value) {
+      this.buffer.writeBool(metadataSchema, this.codecOffsetInBytes, value);
+    }
+  });
+
+})();
+
+exports.FrameHeader = FrameHeader;

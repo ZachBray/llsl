@@ -1,10 +1,14 @@
 /** This is generated code */
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 
-export default const {{{name.pascal_case}}} = {
+var {{{name.pascal_case}}} = {
 {{#each cases}}
   /**
    * {{{description}}}
    */
   {{{name.upper_snake_case}}}: {{{value.original}}},
 {{/each}}
-}
+};
+
+exports.{{{name.pascal_case}}} = {{{name.pascal_case}}};

@@ -1,6 +1,8 @@
 /** This is generated code */
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 
-export default const FrameType = {
+var FrameType = {
 
   /**
    * Reserved
@@ -17,4 +19,6 @@ export default const FrameType = {
    */
   LEASE: 2,
 
-}
+};
+
+exports.FrameType = FrameType;
