@@ -79,9 +79,49 @@ fn visit_codecs(sink: TemplateSink) -> Try<()> {
     })
 }
 
+#[derive(Debug, Serialize, Clone, Eq, PartialEq)]
+struct IndexModel<'a> {
+    exports: Vec<&'a Identifier>,
+}
+
+impl<'a> IndexModel<'a> {
+    fn new(protocol: &'a Protocol) -> Self {
+        let enums = protocol.enums.iter().map(|e| &e.name);
+        let codecs = protocol.codecs.iter().map(|c| &c.name);
+        let exports = enums.chain(codecs).collect::<Vec<_>>();
+        IndexModel { exports }
+    }
+}
+
+fn visit_index(sink: TemplateSink) -> Try<()> {
+    sink(Template {
+        name: "JS index",
+        content: include_str!("index.hbs"),
+        render_targets: Box::new(|protocol, renderer| {
+            let file_name = "javascript/index.js";
+            let model = IndexModel::new(protocol);
+            renderer.render(&file_name, &model)
+        }),
+    })
+}
+
+fn visit_index_declaration(sink: TemplateSink) -> Try<()> {
+    sink(Template {
+        name: "JS index type declaration",
+        content: include_str!("index_types.hbs"),
+        render_targets: Box::new(|protocol, renderer| {
+            let file_name = "javascript/index.d.ts";
+            let model = IndexModel::new(protocol);
+            renderer.render(&file_name, &model)
+        }),
+    })
+}
+
 pub fn visit_all(sink: TemplateSink) -> Try<()> {
     visit_enums(sink)?;
     visit_enum_declarations(sink)?;
     visit_codecs(sink)?;
-    visit_codec_declarations(sink)
+    visit_codec_declarations(sink)?;
+    visit_index(sink)?;
+    visit_index_declaration(sink)
 }
