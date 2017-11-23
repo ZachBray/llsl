@@ -37,6 +37,7 @@ var Frame = (function () {
   };
 
 
+
   Object.defineProperty(Frame.prototype, "length", {
     enumerable: true,
     get: function() {

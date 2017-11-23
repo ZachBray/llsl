@@ -41,6 +41,13 @@ var {{{codec.name.pascal_case}}} = (function () {
     },
   });
 {{else}}
+{{#if type_info.is_blob}}
+  {{{../codec.name.pascal_case}}}.prototype.wrap{{{name.pascal_case}}} = function(wrapper) {
+    var schema = {{{name.camel_case}}}Schema;
+    var offsetInBytes = this.codecOffsetInBytes + schema.offsetInBytes;
+    wrapper.wrap(this.buffer, offsetInBytes);
+  };
+{{else}}
   Object.defineProperty({{{../codec.name.pascal_case}}}.prototype, "{{{name.camel_case}}}", {
     enumerable: true,
     get: function() {
@@ -50,6 +57,7 @@ var {{{codec.name.pascal_case}}} = (function () {
       this.buffer.write{{{type_info.kind.pascal_case}}}({{{name.camel_case}}}Schema, this.codecOffsetInBytes, value);
     },
   });
+{{/if ~}}
 {{/if ~}}
 {{/each ~}}
 })();

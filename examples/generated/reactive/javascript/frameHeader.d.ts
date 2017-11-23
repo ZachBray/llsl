@@ -14,4 +14,6 @@ declare export class FrameHeader implements IBufferWrapper {
 
   metadata: boolean;
 
+  wrapBlobby(wrapper: IBufferWrapper): void;
+
 }

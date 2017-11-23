@@ -58,6 +58,7 @@ var Setup = (function () {
   };
 
 
+
   Object.defineProperty(Setup.prototype, "lease", {
     enumerable: true,
     get: function() {
@@ -67,6 +68,7 @@ var Setup = (function () {
       this.buffer.writeBool(leaseSchema, this.codecOffsetInBytes, value);
     },
   });
+
 
   Object.defineProperty(Setup.prototype, "majorVersion", {
     enumerable: true,
@@ -78,6 +80,7 @@ var Setup = (function () {
     },
   });
 
+
   Object.defineProperty(Setup.prototype, "minorVersion", {
     enumerable: true,
     get: function() {
@@ -88,6 +91,7 @@ var Setup = (function () {
     },
   });
 
+
   Object.defineProperty(Setup.prototype, "timeBetweenKEEPALIVEFrames", {
     enumerable: true,
     get: function() {
@@ -97,6 +101,7 @@ var Setup = (function () {
       this.buffer.writeU32(timeBetweenKEEPALIVEFramesSchema, this.codecOffsetInBytes, value);
     },
   });
+
 
   Object.defineProperty(Setup.prototype, "maxLifetime", {
     enumerable: true,

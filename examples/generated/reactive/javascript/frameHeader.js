@@ -59,6 +59,7 @@ var FrameHeader = (function () {
   };
 
 
+
   Object.defineProperty(FrameHeader.prototype, "streamId", {
     enumerable: true,
     get: function() {
@@ -68,6 +69,7 @@ var FrameHeader = (function () {
       this.buffer.writeU32(streamIdSchema, this.codecOffsetInBytes, value);
     },
   });
+
 
   Object.defineProperty(FrameHeader.prototype, "frameType", {
     enumerable: true,
@@ -79,6 +81,7 @@ var FrameHeader = (function () {
     },
   });
 
+
   Object.defineProperty(FrameHeader.prototype, "ignore", {
     enumerable: true,
     get: function() {
@@ -88,6 +91,7 @@ var FrameHeader = (function () {
       this.buffer.writeBool(ignoreSchema, this.codecOffsetInBytes, value);
     },
   });
+
 
   Object.defineProperty(FrameHeader.prototype, "metadata", {
     enumerable: true,
@@ -99,15 +103,12 @@ var FrameHeader = (function () {
     },
   });
 
-  Object.defineProperty(FrameHeader.prototype, "blobby", {
-    enumerable: true,
-    get: function() {
-      return this.buffer.readBlob(blobbySchema, this.codecOffsetInBytes);
-    },
-    set: function(value) {
-      this.buffer.writeBlob(blobbySchema, this.codecOffsetInBytes, value);
-    },
-  });
+
+  FrameHeader.prototype.wrapBlobby = function(wrapper) {
+    var schema = blobbySchema;
+    var offsetInBytes = this.codecOffsetInBytes + schema.offsetInBytes;
+    wrapper.wrap(this.buffer, offsetInBytes);
+  };
 })();
 
 exports.FrameHeader = FrameHeader;

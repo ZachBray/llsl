@@ -19,5 +19,8 @@ declare export class {{{codec.name.pascal_case}}} implements IBufferWrapper {
 {{#if type_info.is_codec}}
   readonly {{{name.camel_case}}}: {{{type_ref.pascal_case}}};
 {{/if ~}}
+{{#if type_info.is_blob}}
+  wrap{{{name.pascal_case}}}(wrapper: IBufferWrapper): void;
+{{/if ~}}
 {{/each}}
 }
