@@ -25,13 +25,14 @@ When using a transport protocol that does not provide compatible framing, the Fr
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    length                     |
-+-----------------------------------------------+
+|                    length                     |     header   ...
++-----------------------------------------------+---------------+
 ```
 
 | Field | Type | Offset (bits) | Size (bits) | Description |
 | :---- | :--- | ------------: | ----------: | :---------- |
 | <ins>**length**</ins> | | `0` | `24` | Unsigned 24-bit integer representing the length of Frame in bytes. Excluding the Frame Length field. |
+| <ins>**header**</ins> | [Frame Header](#frame-header) | `24` | `` |  |
 
 
 ### Frame Header
@@ -44,8 +45,8 @@ RSocket frames begin with a RSocket Frame Header.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |0|                          Stream Id                          |
 +-+---------+-+-+-----------------------------------------------+
-|Frame Type |I|M|
-+-----------+-+-+
+|Frame Type |I|M|                     Blobby                   ...
++-----------+-+-+-----------------------------------------------+
 ```
 
 | Field | Type | Offset (bits) | Size (bits) | Description |
@@ -54,6 +55,7 @@ RSocket frames begin with a RSocket Frame Header.
 | <ins>**Frame Type**</ins> | [Frame Type](#frame-type) | `32` | `6` | Type of Frame. |
 | <ins>**I**</ins>gnore | | `38` | `1` | Ignore frame if not understood |
 | <ins>**M**</ins>etadata | | `39` | `1` | Metadata present |
+| <ins>**Blobby**</ins> | | `40` | `` |  |
 
 
 ### Setup

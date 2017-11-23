@@ -13,12 +13,14 @@ var Setup = (function () {
     shift: 0,
   };
 
+
   var majorVersionSchema = {
     name: "Major Version",
     offsetInBytes: 2,
     bitMask: 0b1111111111111111, // 65535
     shift: 0,
   };
+
 
   var minorVersionSchema = {
     name: "Minor Version",
@@ -27,6 +29,7 @@ var Setup = (function () {
     shift: 0,
   };
 
+
   var timeBetweenKEEPALIVEFramesSchema = {
     name: "Time Between KEEPALIVE Frames",
     offsetInBytes: 6,
@@ -34,12 +37,14 @@ var Setup = (function () {
     shift: 0,
   };
 
+
   var maxLifetimeSchema = {
     name: "Max Lifetime",
     offsetInBytes: 10,
     bitMask: 0b11111111111111111111111111111110, // 4294967294
     shift: 0,
   };
+
 
 
   function Setup() {
@@ -60,7 +65,7 @@ var Setup = (function () {
     },
     set: function(value) {
       this.buffer.writeBool(leaseSchema, this.codecOffsetInBytes, value);
-    }
+    },
   });
 
   Object.defineProperty(Setup.prototype, "majorVersion", {
@@ -70,7 +75,7 @@ var Setup = (function () {
     },
     set: function(value) {
       this.buffer.writeU16(majorVersionSchema, this.codecOffsetInBytes, value);
-    }
+    },
   });
 
   Object.defineProperty(Setup.prototype, "minorVersion", {
@@ -80,7 +85,7 @@ var Setup = (function () {
     },
     set: function(value) {
       this.buffer.writeU16(minorVersionSchema, this.codecOffsetInBytes, value);
-    }
+    },
   });
 
   Object.defineProperty(Setup.prototype, "timeBetweenKEEPALIVEFrames", {
@@ -90,7 +95,7 @@ var Setup = (function () {
     },
     set: function(value) {
       this.buffer.writeU32(timeBetweenKEEPALIVEFramesSchema, this.codecOffsetInBytes, value);
-    }
+    },
   });
 
   Object.defineProperty(Setup.prototype, "maxLifetime", {
@@ -100,9 +105,8 @@ var Setup = (function () {
     },
     set: function(value) {
       this.buffer.writeU32(maxLifetimeSchema, this.codecOffsetInBytes, value);
-    }
+    },
   });
-
 })();
 
 exports.Setup = Setup;

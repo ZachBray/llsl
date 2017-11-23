@@ -29,6 +29,9 @@ codecs:
     type: u32
     offset_bytes: 0
     ignore_last_bits: 8
+  - name: header
+    type: Frame Header
+    offset_bytes: 3
 
 - name: Frame Header
   description: >-
@@ -58,6 +61,10 @@ codecs:
     type: bool
     offset_bytes: 4
     ignore_first_bits: 7
+
+  - name: Blobby
+    type: blob
+    offset_bytes: 5
 
 - name: Setup
   description: >-

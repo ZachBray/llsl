@@ -1,5 +1,5 @@
 /** This is generated code */
-import { BufferAdapter, IFieldSchema, IBufferWrapper } from "llsl-runtime";
+import { IBufferWrapper } from "llsl-runtime";
 {{#each imports ~}}
 import { {{{pascal_case}}} } from "./{{{camel_case}}}";
 {{/each}}
@@ -15,6 +15,9 @@ declare export class {{{codec.name.pascal_case}}} implements IBufferWrapper {
 {{/if ~}}
 {{#if type_info.is_enum}}
   {{{name.camel_case}}}: {{{type_ref.pascal_case}}};
+{{/if ~}}
+{{#if type_info.is_codec}}
+  readonly {{{name.camel_case}}}: {{{type_ref.pascal_case}}};
 {{/if ~}}
 {{/each}}
 }

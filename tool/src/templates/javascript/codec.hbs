@@ -14,6 +14,9 @@ var {{{codec.name.pascal_case}}} = (function () {
     bitMask: {{{location.bit_mask.binary}}}, // {{{location.bit_mask.original}}}
     shift: {{{location.shift}}},
   };
+{{#if type_info.is_codec}}
+  var {{{name.camel_case}}}Codec = new {{type_ref.pascal_case}}();
+{{/if}}
 {{/each}}
 
   function {{{codec.name.pascal_case}}}() {
@@ -26,7 +29,18 @@ var {{{codec.name.pascal_case}}} = (function () {
     this.codecOffsetInBytes = newOffsetInBytes;
   };
 
-{{#each codec.fields}}
+{{#each codec.fields ~}}
+{{#if type_info.is_codec}}
+  Object.defineProperty({{{../codec.name.pascal_case}}}.prototype, "{{{name.camel_case}}}", {
+    enumerable: true,
+    get: function() {
+      var codec = {{{name.camel_case}}}Codec;
+      var schema = {{{name.camel_case}}}Schema;
+      codec.wrap(this.buffer, this.codecOffsetInBytes + schema.offsetInBytes);
+      return codec;
+    },
+  });
+{{else}}
   Object.defineProperty({{{../codec.name.pascal_case}}}.prototype, "{{{name.camel_case}}}", {
     enumerable: true,
     get: function() {
@@ -34,9 +48,10 @@ var {{{codec.name.pascal_case}}} = (function () {
     },
     set: function(value) {
       this.buffer.write{{{type_info.kind.pascal_case}}}({{{name.camel_case}}}Schema, this.codecOffsetInBytes, value);
-    }
+    },
   });
-{{/each}}
+{{/if ~}}
+{{/each ~}}
 })();
 
 exports.{{{codec.name.pascal_case}}} = {{{codec.name.pascal_case}}};

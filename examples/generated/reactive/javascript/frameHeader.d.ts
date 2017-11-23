@@ -1,5 +1,5 @@
 /** This is generated code */
-import { BufferAdapter, IFieldSchema, IBufferWrapper } from "llsl-runtime";
+import { IBufferWrapper } from "llsl-runtime";
 import { FrameType } from "./frameType";
 
 
