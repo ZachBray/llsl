@@ -5,6 +5,10 @@ export interface IFieldSchema {
   shift: number;
 }
 
+export interface IBufferWrapper {
+  wrap(buffer: BufferAdapter, offsetInBytes: number): void;
+}
+
 export class BufferAdapter {
   constructor(private view: DataView, private isLittleEndian: boolean = true) {}
 

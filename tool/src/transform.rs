@@ -110,6 +110,7 @@ impl<'a> TransformContext<'a> {
         let mut info = TypeInfo {
             kind: Identifier::new(""),
             is_bool: false,
+            is_numeric: false,
             is_byte: false,
             is_u16: false,
             is_u32: false,
@@ -124,14 +125,17 @@ impl<'a> TransformContext<'a> {
             }
             &TypeReference::Byte => {
                 info.kind = Identifier::new("byte");
+                info.is_numeric = true;
                 info.is_byte = true;
             }
             &TypeReference::U16 => {
                 info.kind = Identifier::new("u16");
+                info.is_numeric = true;
                 info.is_u16 = true;
             }
             &TypeReference::U32 => {
                 info.kind = Identifier::new("u32");
+                info.is_numeric = true;
                 info.is_u32 = true;
             }
             &TypeReference::Custom { ref name } => {

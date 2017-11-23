@@ -1,0 +1,20 @@
+/** This is generated code */
+import { BufferAdapter, IFieldSchema, IBufferWrapper } from "llsl-runtime";
+{{#each imports ~}}
+import { {{{pascal_case}}} } from "./{{{camel_case}}}";
+{{/each}}
+
+declare export class {{{codec.name.pascal_case}}} implements IBufferWrapper {
+  constructor();
+{{#each codec.fields ~}}
+{{#if type_info.is_bool}}
+  {{{name.camel_case}}}: boolean;
+{{/if ~}}
+{{#if type_info.is_numeric}}
+  {{{name.camel_case}}}: number;
+{{/if ~}}
+{{#if type_info.is_enum}}
+  {{{name.camel_case}}}: {{{type_ref.pascal_case}}};
+{{/if ~}}
+{{/each}}
+}

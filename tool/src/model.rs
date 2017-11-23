@@ -58,6 +58,7 @@ pub struct Enum {
 pub struct TypeInfo {
     pub kind: Identifier,
     pub is_bool: bool,
+    pub is_numeric: bool,
     pub is_byte: bool,
     pub is_u16: bool,
     pub is_u32: bool,

@@ -2,7 +2,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-var FrameType = require("./frameType.js");
+var FrameType = require("./frameType");
 
 
 var FrameHeader = (function () {

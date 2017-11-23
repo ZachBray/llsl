@@ -4,6 +4,9 @@ export interface IFieldSchema {
     bitMask: number;
     shift: number;
 }
+export interface IBufferWrapper {
+    wrap(buffer: BufferAdapter, offsetInBytes: number): void;
+}
 export declare class BufferAdapter {
     private view;
     private isLittleEndian;
