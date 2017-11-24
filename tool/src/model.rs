@@ -105,7 +105,7 @@ pub struct Codec {
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 pub struct Protocol {
-    pub name: String,
+    pub name: Identifier,
     pub description: String,
     pub version: String,
     pub enums: Vec<Enum>,

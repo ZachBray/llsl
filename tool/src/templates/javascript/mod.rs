@@ -117,11 +117,23 @@ fn visit_index_declaration(sink: TemplateSink) -> Try<()> {
     })
 }
 
+fn visit_package(sink: TemplateSink) -> Try<()> {
+    sink(Template {
+        name: "Package",
+        content: include_str!("package.hbs"),
+        render_targets: Box::new(|protocol, renderer| {
+            let file_name = "javascript/package.json";
+            renderer.render(&file_name, &protocol)
+        }),
+    })
+}
+
 pub fn visit_all(sink: TemplateSink) -> Try<()> {
     visit_enums(sink)?;
     visit_enum_declarations(sink)?;
     visit_codecs(sink)?;
     visit_codec_declarations(sink)?;
     visit_index(sink)?;
-    visit_index_declaration(sink)
+    visit_index_declaration(sink)?;
+    visit_package(sink)
 }

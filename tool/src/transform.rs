@@ -258,7 +258,7 @@ impl<'a> TransformContext<'a> {
 
     fn build_model(&mut self) -> Try<Protocol> {
         Ok(Protocol {
-            name: self.document.name.to_owned(),
+            name: Identifier::new(&self.document.name),
             description: self.document.description.to_owned(),
             version: self.document.version.to_owned(),
             enums: self.document
