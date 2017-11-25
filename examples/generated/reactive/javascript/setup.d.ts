@@ -3,7 +3,7 @@
 import { IBufferWrapper } from "llsl-runtime";
 
 
-declare export class Setup implements IBufferWrapper {
+export declare class Setup implements IBufferWrapper {
   constructor();
 
   lease: boolean;

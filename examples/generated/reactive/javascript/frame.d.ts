@@ -4,7 +4,7 @@ import { IBufferWrapper } from "llsl-runtime";
 import { FrameHeader } from "./frameHeader";
 
 
-declare export class Frame implements IBufferWrapper {
+export declare class Frame implements IBufferWrapper {
   constructor();
 
   length: number;

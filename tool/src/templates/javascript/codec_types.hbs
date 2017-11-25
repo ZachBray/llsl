@@ -5,7 +5,7 @@ import { IBufferWrapper } from "llsl-runtime";
 import { {{{pascal_case}}} } from "./{{{camel_case}}}";
 {{/each}}
 
-declare export class {{{codec.name.pascal_case}}} implements IBufferWrapper {
+export declare class {{{codec.name.pascal_case}}} implements IBufferWrapper {
   constructor();
 {{#each codec.fields ~}}
 {{#if type_info.is_bool}}
