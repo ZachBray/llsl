@@ -1,12 +1,14 @@
 /** This is generated code */
 
-import { IBufferWrapper } from "llsl-runtime";
+import { BufferAdapter, IBufferWrapper } from "llsl-runtime";
 {{#each imports ~}}
 import { {{{pascal_case}}} } from "./{{{camel_case}}}";
 {{/each}}
 
 export declare class {{{codec.name.pascal_case}}} implements IBufferWrapper {
   constructor();
+
+  wrap(buffer: BufferAdapter, offsetInBytes: number);
 {{#each codec.fields ~}}
 {{#if type_info.is_bool}}
   {{{name.camel_case}}}: boolean;
