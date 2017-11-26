@@ -1,11 +1,12 @@
 use try::*;
-use output::Template;
-use super::TemplateSink;
+use model::*;
+use output::*;
 
-pub fn visit_all(sink: TemplateSink) -> Try<()> {
-    sink(Template {
-        name: "readme",
-        content: include_str!("readme.hbs"),
-        render_targets: Box::new(|protocol, renderer| renderer.render("README.md", protocol)),
-    })
+static README_TEMPLATE: Template = Template {
+    name: "readme",
+    content: include_str!("readme.hbs"),
+};
+
+pub fn render_all(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
+    renderer.render(&README_TEMPLATE, renderer.root_model, "README.md")
 }

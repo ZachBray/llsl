@@ -6,28 +6,41 @@ use super::try::*;
 use super::model::*;
 use super::templates;
 
-pub struct TemplateRenderer<'a> {
-    output_dir: &'a str,
-    template: &'a Template,
-    engine: &'a Handlebars,
+pub struct Template<'a> {
+    pub name: &'a str,
+    pub content: &'a str,
 }
 
-impl<'a> TemplateRenderer<'a> {
-    pub fn render<T>(&self, output_path: &str, data: &T) -> Try<()>
+pub struct TemplateRenderer<Model> {
+    output_dir: String,
+    engine: Handlebars,
+    pub root_model: Model,
+}
+
+impl<Model> TemplateRenderer<Model> {
+    fn new(output_dir: String, root_model: Model) -> Self {
+        TemplateRenderer {
+            engine: Handlebars::new(),
+            output_dir,
+            root_model,
+        }
+    }
+
+    pub fn render<T>(&self, template: &Template, data: &T, output_path: &str) -> Try<()>
     where
         T: Serialize,
     {
-        info!("Executing {} template", self.template.name);
-        let output_path = Path::new(self.output_dir).join(output_path);
-        trace!("Template: {}", self.template.content);
-        let mut output_file = TemplateRenderer::create_output_file(&output_path)?;
+        info!("Executing {} template", template.name);
+        let output_path = Path::new(&self.output_dir).join(output_path);
+        trace!("Template: {}", template.content);
+        let mut output_file = Self::create_output_file(&output_path)?;
         self.engine
-            .template_renderw(self.template.content, data, &mut output_file)
+            .template_renderw(template.content, data, &mut output_file)
             .map_err(|e| ErrorCode::FailedToExecuteTemplate(e))
     }
 
     fn create_output_file(output_path: &PathBuf) -> Try<File> {
-        TemplateRenderer::create_parent_dir(output_path)?;
+        Self::create_parent_dir(output_path)?;
         debug!("Creating output file: {:?}", output_path);
         File::create(output_path).map_err(|e| ErrorCode::FailedToCreateOutputFile(e))
     }
@@ -43,21 +56,7 @@ impl<'a> TemplateRenderer<'a> {
     }
 }
 
-pub struct Template {
-    pub name: &'static str,
-    pub content: &'static str,
-    pub render_targets: Box<Fn(&Protocol, &mut TemplateRenderer) -> Try<()>>,
-}
-
 pub fn generate_code(protocol: &Protocol, output_dir: &str) -> Try<()> {
-    let engine = Handlebars::new();
-    let render_template = |template| {
-        let mut renderer = TemplateRenderer {
-            output_dir,
-            engine: &engine,
-            template: &template,
-        };
-        (*template.render_targets)(protocol, &mut renderer)
-    };
-    templates::visit_all(&render_template)
+    let renderer = TemplateRenderer::new(output_dir.to_owned(), protocol);
+    templates::render_all(&renderer)
 }

@@ -1,35 +1,57 @@
 use std::collections::BTreeSet;
 use try::*;
 use model::*;
-use output::Template;
-use super::TemplateSink;
+use output::*;
 
-fn visit_enum_declarations(sink: TemplateSink) -> Try<()> {
-    sink(Template {
-        name: "JS enum type declarations",
-        content: include_str!("enum_types.hbs"),
-        render_targets: Box::new(|protocol, renderer| {
-            for e in &protocol.enums {
-                let file_name = format!("javascript/{}.d.ts", e.name.camel_case);
-                renderer.render(&file_name, e)?;
-            }
-            Ok(())
-        }),
-    })
-}
+static ENUM_TEMPLATE: Template = Template {
+    name: "JS enum",
+    content: include_str!("enum.hbs"),
+};
 
-fn visit_enums(sink: TemplateSink) -> Try<()> {
-    sink(Template {
-        name: "JS enum",
-        content: include_str!("enum.hbs"),
-        render_targets: Box::new(|protocol, renderer| {
-            for e in &protocol.enums {
-                let file_name = format!("javascript/{}.js", e.name.camel_case);
-                renderer.render(&file_name, e)?;
-            }
-            Ok(())
-        }),
-    })
+static ENUM_TYPES_TEMPLATE: Template = Template {
+    name: "JS enum_types",
+    content: include_str!("enum_types.hbs"),
+};
+
+static CODEC_TEMPLATE: Template = Template {
+    name: "JS codec",
+    content: include_str!("codec.hbs"),
+};
+
+static CODEC_TYPES_TEMPLATE: Template = Template {
+    name: "JS codec_types",
+    content: include_str!("codec_types.hbs"),
+};
+
+static INDEX_TEMPLATE: Template = Template {
+    name: "JS index",
+    content: include_str!("index.hbs"),
+};
+
+static INDEX_TYPES_TEMPLATE: Template = Template {
+    name: "JS index_types",
+    content: include_str!("index_types.hbs"),
+};
+
+static PACKAGE_TEMPLATE: Template = Template {
+    name: "JS package",
+    content: include_str!("package.hbs"),
+};
+
+fn render_enums(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
+    for e in &renderer.root_model.enums {
+        renderer.render(
+            &ENUM_TEMPLATE,
+            e,
+            &format!("javascript/{}.js", e.name.camel_case),
+        )?;
+        renderer.render(
+            &ENUM_TYPES_TEMPLATE,
+            e,
+            &format!("javascript/{}.d.ts", e.name.camel_case),
+        )?;
+    }
+    Ok(())
 }
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
@@ -49,34 +71,21 @@ impl<'a> CodecModel<'a> {
     }
 }
 
-fn visit_codec_declarations(sink: TemplateSink) -> Try<()> {
-    sink(Template {
-        name: "JS codec type declarations",
-        content: include_str!("codec_types.hbs"),
-        render_targets: Box::new(|protocol, renderer| {
-            for c in &protocol.codecs {
-                let file_name = format!("javascript/{}.d.ts", c.name.camel_case);
-                let model = CodecModel::new(c);
-                renderer.render(&file_name, &model)?;
-            }
-            Ok(())
-        }),
-    })
-}
-
-fn visit_codecs(sink: TemplateSink) -> Try<()> {
-    sink(Template {
-        name: "JS codec",
-        content: include_str!("codec.hbs"),
-        render_targets: Box::new(|protocol, renderer| {
-            for c in &protocol.codecs {
-                let file_name = format!("javascript/{}.js", c.name.camel_case);
-                let model = CodecModel::new(c);
-                renderer.render(&file_name, &model)?;
-            }
-            Ok(())
-        }),
-    })
+fn render_codecs(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
+    for c in &renderer.root_model.codecs {
+        let model = CodecModel::new(c);
+        renderer.render(
+            &CODEC_TEMPLATE,
+            &model,
+            &format!("javascript/{}.js", c.name.camel_case),
+        )?;
+        renderer.render(
+            &CODEC_TYPES_TEMPLATE,
+            &model,
+            &format!("javascript/{}.d.ts", c.name.camel_case),
+        )?;
+    }
+    Ok(())
 }
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
@@ -93,47 +102,27 @@ impl<'a> IndexModel<'a> {
     }
 }
 
-fn visit_index(sink: TemplateSink) -> Try<()> {
-    sink(Template {
-        name: "JS index",
-        content: include_str!("index.hbs"),
-        render_targets: Box::new(|protocol, renderer| {
-            let file_name = "javascript/index.js";
-            let model = IndexModel::new(protocol);
-            renderer.render(&file_name, &model)
-        }),
-    })
+fn render_index(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
+    let model = IndexModel::new(renderer.root_model);
+    renderer.render(
+        &INDEX_TEMPLATE,
+        &model,
+        "javascript/index.js",
+    )?;
+    renderer.render(&INDEX_TYPES_TEMPLATE, &model, "javascript/index.d.ts")
 }
 
-fn visit_index_declaration(sink: TemplateSink) -> Try<()> {
-    sink(Template {
-        name: "JS index type declaration",
-        content: include_str!("index_types.hbs"),
-        render_targets: Box::new(|protocol, renderer| {
-            let file_name = "javascript/index.d.ts";
-            let model = IndexModel::new(protocol);
-            renderer.render(&file_name, &model)
-        }),
-    })
+fn render_package(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
+    renderer.render(
+        &PACKAGE_TEMPLATE,
+        renderer.root_model,
+        "javascript/package.json",
+    )
 }
 
-fn visit_package(sink: TemplateSink) -> Try<()> {
-    sink(Template {
-        name: "Package",
-        content: include_str!("package.hbs"),
-        render_targets: Box::new(|protocol, renderer| {
-            let file_name = "javascript/package.json";
-            renderer.render(&file_name, &protocol)
-        }),
-    })
-}
-
-pub fn visit_all(sink: TemplateSink) -> Try<()> {
-    visit_enums(sink)?;
-    visit_enum_declarations(sink)?;
-    visit_codecs(sink)?;
-    visit_codec_declarations(sink)?;
-    visit_index(sink)?;
-    visit_index_declaration(sink)?;
-    visit_package(sink)
+pub fn render_all(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
+    render_enums(renderer)?;
+    render_codecs(renderer)?;
+    render_index(renderer)?;
+    render_package(renderer)
 }

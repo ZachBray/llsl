@@ -2,11 +2,10 @@ mod docs;
 mod javascript;
 
 use try::*;
-use output::Template;
+use model::*;
+use output::*;
 
-pub type TemplateSink<'a> = &'a Fn(Template) -> Try<()>;
-
-pub fn visit_all(sink: TemplateSink) -> Try<()> {
-    docs::visit_all(sink)?;
-    javascript::visit_all(sink)
+pub fn render_all(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
+    docs::render_all(renderer)?;
+    javascript::render_all(renderer)
 }
