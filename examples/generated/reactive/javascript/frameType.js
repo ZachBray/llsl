@@ -2,7 +2,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-var FrameType = {
+var FrameType = exports.FrameType = {
 
   /**
    * Reserved
@@ -20,5 +20,3 @@ var FrameType = {
   LEASE: 2,
 
 };
-
-exports.FrameType = FrameType;

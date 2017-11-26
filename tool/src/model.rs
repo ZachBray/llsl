@@ -56,7 +56,8 @@ pub struct Enum {
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 pub struct TypeInfo {
-    pub kind: Identifier,
+    // The intermediate type used to read/write
+    pub access_type: Option<Identifier>,
     pub is_bool: bool,
     pub is_numeric: bool,
     pub is_byte: bool,

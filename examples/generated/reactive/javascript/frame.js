@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var FrameHeader = require("./frameHeader");
 
 
-var Frame = (function () {
+var Frame = exports.Frame = (function () {
 
   var lengthSchema = {
     name: "length",
@@ -57,6 +57,5 @@ var Frame = (function () {
       return codec;
     },
   });
+return Frame;
 })();
-
-exports.Frame = Frame;

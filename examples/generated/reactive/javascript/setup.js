@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 
 
-var Setup = (function () {
+var Setup = exports.Setup = (function () {
 
   var leaseSchema = {
     name: "Lease",
@@ -112,6 +112,5 @@ var Setup = (function () {
       this.buffer.writeU32(maxLifetimeSchema, this.codecOffsetInBytes, value);
     },
   });
+return Setup;
 })();
-
-exports.Setup = Setup;

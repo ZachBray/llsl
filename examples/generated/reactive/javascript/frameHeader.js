@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var FrameType = require("./frameType");
 
 
-var FrameHeader = (function () {
+var FrameHeader = exports.FrameHeader = (function () {
 
   var streamIdSchema = {
     name: "Stream Id",
@@ -74,10 +74,10 @@ var FrameHeader = (function () {
   Object.defineProperty(FrameHeader.prototype, "frameType", {
     enumerable: true,
     get: function() {
-      return this.buffer.readEnum(frameTypeSchema, this.codecOffsetInBytes);
+      return this.buffer.readU32(frameTypeSchema, this.codecOffsetInBytes);
     },
     set: function(value) {
-      this.buffer.writeEnum(frameTypeSchema, this.codecOffsetInBytes, value);
+      this.buffer.writeU32(frameTypeSchema, this.codecOffsetInBytes, value);
     },
   });
 
@@ -109,6 +109,5 @@ var FrameHeader = (function () {
     var offsetInBytes = this.codecOffsetInBytes + schema.offsetInBytes;
     wrapper.wrap(this.buffer, offsetInBytes);
   };
+return FrameHeader;
 })();
-
-exports.FrameHeader = FrameHeader;

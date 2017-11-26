@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var {{{pascal_case}}} = require("./{{{camel_case}}}");
 {{/each}}
 
-var {{{codec.name.pascal_case}}} = (function () {
+var {{{codec.name.pascal_case}}} = exports.{{{codec.name.pascal_case}}} = (function () {
 {{#each codec.fields }}
   var {{{name.camel_case}}}Schema = {
     name: "{{{name.original}}}",
@@ -51,15 +51,14 @@ var {{{codec.name.pascal_case}}} = (function () {
   Object.defineProperty({{{../codec.name.pascal_case}}}.prototype, "{{{name.camel_case}}}", {
     enumerable: true,
     get: function() {
-      return this.buffer.read{{{type_info.kind.pascal_case}}}({{{name.camel_case}}}Schema, this.codecOffsetInBytes);
+      return this.buffer.read{{{type_info.access_type.pascal_case}}}({{{name.camel_case}}}Schema, this.codecOffsetInBytes);
     },
     set: function(value) {
-      this.buffer.write{{{type_info.kind.pascal_case}}}({{{name.camel_case}}}Schema, this.codecOffsetInBytes, value);
+      this.buffer.write{{{type_info.access_type.pascal_case}}}({{{name.camel_case}}}Schema, this.codecOffsetInBytes, value);
     },
   });
 {{/if ~}}
 {{/if ~}}
 {{/each ~}}
+  return {{{codec.name.pascal_case}}};
 })();
-
-exports.{{{codec.name.pascal_case}}} = {{{codec.name.pascal_case}}};

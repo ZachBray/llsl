@@ -108,7 +108,7 @@ impl<'a> TransformContext<'a> {
 
     fn transform_type_info(&mut self, type_ref: &'a TypeReference) -> TypeInfo {
         let mut info = TypeInfo {
-            kind: Identifier::new(""),
+            access_type: None,
             is_bool: false,
             is_numeric: false,
             is_byte: false,
@@ -120,21 +120,21 @@ impl<'a> TransformContext<'a> {
         };
         match type_ref {
             &TypeReference::Bool => {
-                info.kind = Identifier::new("bool");
+                info.access_type = Some(Identifier::new("bool"));
                 info.is_bool = true;
             }
             &TypeReference::Byte => {
-                info.kind = Identifier::new("byte");
+                info.access_type = Some(Identifier::new("byte"));
                 info.is_numeric = true;
                 info.is_byte = true;
             }
             &TypeReference::U16 => {
-                info.kind = Identifier::new("u16");
+                info.access_type = Some(Identifier::new("u16"));
                 info.is_numeric = true;
                 info.is_u16 = true;
             }
             &TypeReference::U32 => {
-                info.kind = Identifier::new("u32");
+                info.access_type = Some(Identifier::new("u32"));
                 info.is_numeric = true;
                 info.is_u32 = true;
             }
@@ -142,15 +142,11 @@ impl<'a> TransformContext<'a> {
                 let key: &str = name;
                 info.is_enum = self.enums_by_name.contains_key(&key);
                 if info.is_enum {
-                    info.kind = Identifier::new("enum");
+                    info.access_type = Some(Identifier::new("u32"));
                 }
                 info.is_codec = self.codecs_by_name.contains_key(&key);
-                if info.is_codec {
-                    info.kind = Identifier::new("codec");
-                }
             }
             &TypeReference::Blob { .. } => {
-                info.kind = Identifier::new("blob");
                 info.is_blob = true;
             }
         };
