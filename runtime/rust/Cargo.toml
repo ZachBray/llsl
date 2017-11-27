@@ -1,0 +1,10 @@
+[package]
+name = "llsl-runtime"
+version = "0.1.0"
+
+[dependencies]
+byteorder = "*"
+
+[dev-dependencies]
+quickcheck = "*"
+quickcheck_macros = "*"
