@@ -8,10 +8,26 @@ static CODEC_TEMPLATE: Template = Template {
     content: include_str!("codec.hbs"),
 };
 
+static ENUM_TEMPLATE: Template = Template {
+    name: "Rust enum",
+    content: include_str!("enum.hbs"),
+};
+
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 struct CodecModel<'a> {
     codec: &'a Codec,
     imports: BTreeSet<&'a Identifier>,
+}
+
+fn render_enums(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
+    for e in &renderer.root_model.enums {
+        renderer.render(
+            &ENUM_TEMPLATE,
+            &e,
+            &format!("rust/{}.rs", e.name.snake_case),
+        )?;
+    }
+    Ok(())
 }
 
 impl<'a> CodecModel<'a> {
@@ -38,6 +54,7 @@ fn render_codecs(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
 }
 
 pub fn render_all(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
+    render_enums(renderer)?;
     render_codecs(renderer)?;
     Ok(())
 }

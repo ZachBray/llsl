@@ -4,8 +4,20 @@
 extern crate byteorder;
 #[cfg(test)]
 extern crate quickcheck;
+#[macro_use]
+extern crate quick_error;
 
 use byteorder::{LE, ByteOrder};
+
+quick_error! {
+    #[derive(Debug)]
+    pub enum RuntimeError {
+        InvalidEnumValue(enum_name: &'static str, value: u32) {
+            description("Failed to deserialize enum value.")
+            display("Failed to deserialize {} as a {}", value, enum_name)
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct FieldSchema {
