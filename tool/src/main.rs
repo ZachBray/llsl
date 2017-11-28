@@ -4,6 +4,8 @@ extern crate handlebars;
 #[macro_use]
 extern crate log;
 extern crate pretty_env_logger;
+#[macro_use]
+extern crate quick_error;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -31,13 +33,9 @@ fn compile() -> Try<()> {
     let args = Args::parse()?;
     debug!("Parsed arguments: {:?}", args);
     info!("Opening input file: {:?}", args.input);
-    let input_file = File::open(args.input).map_err(|e| {
-        ErrorCode::FailedToOpenInputFile(e)
-    })?;
+    let input_file = File::open(args.input)?;
     info!("Parsing input file");
-    let document: Document = serde_yaml::from_reader(input_file).map_err(|e| {
-        ErrorCode::FailedToParseInputFile(e)
-    })?;
+    let document: Document = serde_yaml::from_reader(input_file)?;
     debug!("Parsed input file: {:?}", document);
     info!("Building model");
     let model = transform(document)?;
@@ -51,9 +49,9 @@ fn main() {
         Ok(_) => {
             match compile() {
                 Ok(_) => info!("Done"),
-                Err(code) => error!("Failed to generate code. {:?}", code),
+                Err(error) => error!("Failed to generate code. {}", error),
             }
         }
-        Err(error) => println!("Failed to start logger. {:?}", error),
+        Err(error) => println!("Failed to start logger. {}", error),
     }
 }

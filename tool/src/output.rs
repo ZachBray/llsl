@@ -34,23 +34,25 @@ impl<Model> TemplateRenderer<Model> {
         let output_path = Path::new(&self.output_dir).join(output_path);
         trace!("Template: {}", template.content);
         let mut output_file = Self::create_output_file(&output_path)?;
-        self.engine
-            .template_renderw(template.content, data, &mut output_file)
-            .map_err(|e| ErrorCode::FailedToExecuteTemplate(e))
+        self.engine.template_renderw(
+            template.content,
+            data,
+            &mut output_file,
+        )?;
+        Ok(())
     }
 
     fn create_output_file(output_path: &PathBuf) -> Try<File> {
         Self::create_parent_dir(output_path)?;
         debug!("Creating output file: {:?}", output_path);
-        File::create(output_path).map_err(|e| ErrorCode::FailedToCreateOutputFile(e))
+        let file = File::create(output_path)?;
+        Ok(file)
     }
 
     fn create_parent_dir(output_path: &PathBuf) -> Try<()> {
         if let Some(parent_dir) = output_path.parent() {
             debug!("Creating parent directory: {:?}", parent_dir);
-            create_dir_all(parent_dir).map_err(|e| {
-                ErrorCode::FailedToCreateOutputDir(e)
-            })?;
+            create_dir_all(parent_dir)?;
         }
         Ok(())
     }

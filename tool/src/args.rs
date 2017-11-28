@@ -20,11 +20,11 @@ impl Args {
             .get_matches();
         let input = matches
             .value_of("in")
-            .ok_or(ErrorCode::IncorrectArguments)?
+            .ok_or(ToolError::IncorrectArguments)?
             .to_owned();
         let output_directory = matches
             .value_of("out")
-            .ok_or(ErrorCode::IncorrectArguments)?
+            .ok_or(ToolError::IncorrectArguments)?
             .to_owned();
         Ok(Args {
             input,

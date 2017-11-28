@@ -98,7 +98,7 @@ impl<'a> TransformContext<'a> {
             } else if let Some(e) = self.enums_by_name.get(name) {
                 Ok(Some(e.bits))
             } else {
-                Err(ErrorCode::FailedToLocateType(name.to_owned()))
+                Err(ToolError::FailedToLocateType(name.to_owned()))
             }?;
             self.bits_by_name.insert(name, bits);
             Ok(bits)
@@ -213,7 +213,7 @@ impl<'a> TransformContext<'a> {
             );
             let overlaps_with_previous_field = field.diagram_info.offset_bits < next_free_offset;
             if overlaps_with_previous_field {
-                Err(ErrorCode::FailedToLayoutDiagramDueToOverlappingFields(
+                Err(ToolError::FailedToLayoutDiagramDueToOverlappingFields(
                     field.name.original.to_owned(),
                 ))?;
             }

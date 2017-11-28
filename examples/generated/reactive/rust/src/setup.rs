@@ -41,12 +41,14 @@ static MAX_LIFETIME_SCHEMA: FieldSchema = FieldSchema {
 
 
 pub struct Setup<'a> {
-    buffer: BufferAdapter<'a>,
+  buffer: BufferAdapter<'a>
 }
 
 impl<'a> Setup<'a> {
     pub fn wrap(buffer: BufferAdapter<'a>) -> Self {
-        Setup { buffer }
+        Setup {
+            buffer
+        }
     }
 
     pub fn get_lease(&self) -> bool {
@@ -74,21 +76,18 @@ impl<'a> Setup<'a> {
     }
 
     pub fn get_time_between_keepalive_frames(&self) -> u32 {
-        self.buffer.read_u32(&TIME_BETWEEN_KEEPALIVE_FRAMES_SCHEMA)
+      self.buffer.read_u32(&TIME_BETWEEN_KEEPALIVE_FRAMES_SCHEMA)
     }
 
     pub fn set_time_between_keepalive_frames(&mut self, value: u32) {
-        self.buffer.write_u32(
-            &TIME_BETWEEN_KEEPALIVE_FRAMES_SCHEMA,
-            value,
-        )
+      self.buffer.write_u32(&TIME_BETWEEN_KEEPALIVE_FRAMES_SCHEMA, value)
     }
 
     pub fn get_max_lifetime(&self) -> u32 {
-        self.buffer.read_u32(&MAX_LIFETIME_SCHEMA)
+      self.buffer.read_u32(&MAX_LIFETIME_SCHEMA)
     }
 
     pub fn set_max_lifetime(&mut self, value: u32) {
-        self.buffer.write_u32(&MAX_LIFETIME_SCHEMA, value)
+      self.buffer.write_u32(&MAX_LIFETIME_SCHEMA, value)
     }
 }

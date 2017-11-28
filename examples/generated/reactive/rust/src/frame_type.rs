@@ -24,10 +24,10 @@ impl TryFrom<u32> for FrameType {
 
     fn try_from(value: u32) -> Result<Self, RuntimeError> {
         match value {
-            0 => Ok(FrameType::Reserved),
-            1 => Ok(FrameType::Setup),
-            2 => Ok(FrameType::Lease),
-            _ => Err(RuntimeError::InvalidEnumValue("FrameType", value)),
+             0 => Ok(FrameType::Reserved),
+             1 => Ok(FrameType::Setup),
+             2 => Ok(FrameType::Lease),
+             _ => Err(RuntimeError::InvalidEnumValue("FrameType", value)),
         }
     }
 }

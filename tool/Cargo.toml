@@ -9,6 +9,7 @@ clap = { version = "= 2.26.1", features = ["color", "suggestions"] }
 handlebars = "*"
 log = "*"
 pretty_env_logger = "*"
+quick-error = "*"
 serde = "*"
 serde_yaml = "*"
 serde_derive = "*"

@@ -3,4 +3,4 @@ name = "reactive_protocol"
 version = "0.0.1"
 
 [dependencies]
-llsl_runtime = { path = "../../../../runtime/rust" }
+llsl_runtime = "*"

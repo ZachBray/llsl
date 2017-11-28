@@ -21,20 +21,22 @@ static HEADER_SCHEMA: FieldSchema = FieldSchema {
 
 
 pub struct Frame<'a> {
-    buffer: BufferAdapter<'a>,
+  buffer: BufferAdapter<'a>
 }
 
 impl<'a> Frame<'a> {
     pub fn wrap(buffer: BufferAdapter<'a>) -> Self {
-        Frame { buffer }
+        Frame {
+            buffer
+        }
     }
 
     pub fn get_length(&self) -> u32 {
-        self.buffer.read_u32(&LENGTH_SCHEMA)
+      self.buffer.read_u32(&LENGTH_SCHEMA)
     }
 
     pub fn set_length(&mut self, value: u32) {
-        self.buffer.write_u32(&LENGTH_SCHEMA, value)
+      self.buffer.write_u32(&LENGTH_SCHEMA, value)
     }
 
     pub fn get_header(&mut self) -> FrameHeader {

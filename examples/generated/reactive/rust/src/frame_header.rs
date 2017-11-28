@@ -42,20 +42,22 @@ static BLOBBY_SCHEMA: FieldSchema = FieldSchema {
 
 
 pub struct FrameHeader<'a> {
-    buffer: BufferAdapter<'a>,
+  buffer: BufferAdapter<'a>
 }
 
 impl<'a> FrameHeader<'a> {
     pub fn wrap(buffer: BufferAdapter<'a>) -> Self {
-        FrameHeader { buffer }
+        FrameHeader {
+            buffer
+        }
     }
 
     pub fn get_stream_id(&self) -> u32 {
-        self.buffer.read_u32(&STREAM_ID_SCHEMA)
+      self.buffer.read_u32(&STREAM_ID_SCHEMA)
     }
 
     pub fn set_stream_id(&mut self, value: u32) {
-        self.buffer.write_u32(&STREAM_ID_SCHEMA, value)
+      self.buffer.write_u32(&STREAM_ID_SCHEMA, value)
     }
 
     pub fn get_frame_type(&self) -> Result<FrameType, RuntimeError> {
