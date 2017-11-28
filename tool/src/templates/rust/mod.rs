@@ -18,12 +18,17 @@ static LIB_TEMPLATE: Template = Template {
     content: include_str!("lib.hbs"),
 };
 
+static PACKAGE_TEMPLATE: Template = Template {
+    name: "Rust package",
+    content: include_str!("cargo_package.hbs"),
+};
+
 fn render_enums(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
     for e in &renderer.root_model.enums {
         renderer.render(
             &ENUM_TEMPLATE,
             &e,
-            &format!("rust/{}.rs", e.name.snake_case),
+            &format!("rust/src/{}.rs", e.name.snake_case),
         )?;
     }
     Ok(())
@@ -52,7 +57,7 @@ fn render_codecs(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
         renderer.render(
             &CODEC_TEMPLATE,
             &model,
-            &format!("rust/{}.rs", c.name.snake_case),
+            &format!("rust/src/{}.rs", c.name.snake_case),
         )?;
     }
     Ok(())
@@ -78,12 +83,17 @@ impl<'a> LibModel<'a> {
 
 fn render_lib(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
     let model = LibModel::new(renderer.root_model);
-    renderer.render(&LIB_TEMPLATE, &model, "rust/lib.rs")
+    renderer.render(&LIB_TEMPLATE, &model, "rust/src/lib.rs")
+}
+
+fn render_package(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
+    renderer.render(&PACKAGE_TEMPLATE, &renderer.root_model, "rust/Cargo.toml")
 }
 
 pub fn render_all(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
     render_enums(renderer)?;
     render_codecs(renderer)?;
     render_lib(renderer)?;
+    render_package(renderer)?;
     Ok(())
 }

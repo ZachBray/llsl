@@ -1,5 +1,5 @@
 [package]
-name = "llsl-runtime"
+name = "llsl_runtime"
 version = "0.1.0"
 
 [dependencies]

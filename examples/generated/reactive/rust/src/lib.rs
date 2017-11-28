@@ -3,6 +3,7 @@
 
 extern crate llsl_runtime;
 
-{{#each modules ~}}
-pub mod {{{snake_case}}};
-{{/each}}
+pub mod frame;
+pub mod frame_header;
+pub mod frame_type;
+pub mod setup;

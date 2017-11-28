@@ -1,5 +1,5 @@
-/** This is generated code */
 use std::result::Result;
+use std::convert::TryFrom;
 use llsl_runtime::{BufferAdapter, FieldSchema, RuntimeError};
 use super::frame_type::FrameType;
 
@@ -42,22 +42,20 @@ static BLOBBY_SCHEMA: FieldSchema = FieldSchema {
 
 
 pub struct FrameHeader<'a> {
-  buffer: BufferAdapter<'a>
+    buffer: BufferAdapter<'a>,
 }
 
 impl<'a> FrameHeader<'a> {
-    pub fn wrap(buffer: BufferAdapter) -> Self {
-        FrameHeader {
-            buffer
-        }
+    pub fn wrap(buffer: BufferAdapter<'a>) -> Self {
+        FrameHeader { buffer }
     }
 
     pub fn get_stream_id(&self) -> u32 {
-      self.buffer.read_u32(&STREAM_ID_SCHEMA)
+        self.buffer.read_u32(&STREAM_ID_SCHEMA)
     }
 
     pub fn set_stream_id(&mut self, value: u32) {
-      self.buffer.write_u32(&STREAM_ID_SCHEMA, value)
+        self.buffer.write_u32(&STREAM_ID_SCHEMA, value)
     }
 
     pub fn get_frame_type(&self) -> Result<FrameType, RuntimeError> {
@@ -87,6 +85,6 @@ impl<'a> FrameHeader<'a> {
     }
 
     pub fn get_blobby(&mut self) -> BufferAdapter {
-        self.seek(&BLOBBY_SCHEMA)
+        self.buffer.seek_field(&BLOBBY_SCHEMA)
     }
 }

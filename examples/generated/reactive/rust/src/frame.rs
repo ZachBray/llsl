@@ -1,5 +1,5 @@
-/** This is generated code */
 use std::result::Result;
+use std::convert::TryFrom;
 use llsl_runtime::{BufferAdapter, FieldSchema, RuntimeError};
 use super::frame_header::FrameHeader;
 
@@ -21,26 +21,24 @@ static HEADER_SCHEMA: FieldSchema = FieldSchema {
 
 
 pub struct Frame<'a> {
-  buffer: BufferAdapter<'a>
+    buffer: BufferAdapter<'a>,
 }
 
 impl<'a> Frame<'a> {
-    pub fn wrap(buffer: BufferAdapter) -> Self {
-        Frame {
-            buffer
-        }
+    pub fn wrap(buffer: BufferAdapter<'a>) -> Self {
+        Frame { buffer }
     }
 
     pub fn get_length(&self) -> u32 {
-      self.buffer.read_u32(&LENGTH_SCHEMA)
+        self.buffer.read_u32(&LENGTH_SCHEMA)
     }
 
     pub fn set_length(&mut self, value: u32) {
-      self.buffer.write_u32(&LENGTH_SCHEMA, value)
+        self.buffer.write_u32(&LENGTH_SCHEMA, value)
     }
 
     pub fn get_header(&mut self) -> FrameHeader {
-        let buffer = self.seek(&HEADER_SCHEMA);
+        let buffer = self.buffer.seek_field(&HEADER_SCHEMA);
         FrameHeader::wrap(buffer)
     }
 }

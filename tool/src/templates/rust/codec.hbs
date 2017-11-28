@@ -1,5 +1,5 @@
-/** This is generated code */
 use std::result::Result;
+use std::convert::TryFrom;
 use llsl_runtime::{BufferAdapter, FieldSchema, RuntimeError};
 {{#each imports ~}}
 use super::{{{snake_case}}}::{{{pascal_case}}};
@@ -19,7 +19,7 @@ pub struct {{{codec.name.pascal_case}}}<'a> {
 }
 
 impl<'a> {{{codec.name.pascal_case}}}<'a> {
-    pub fn wrap(buffer: BufferAdapter) -> Self {
+    pub fn wrap(buffer: BufferAdapter<'a>) -> Self {
         {{{codec.name.pascal_case}}} {
             buffer
         }
@@ -74,13 +74,13 @@ impl<'a> {{{codec.name.pascal_case}}}<'a> {
 {{/if ~}}
 {{#if type_info.is_codec}}
     pub fn get_{{{name.snake_case}}}(&mut self) -> {{{type_ref.pascal_case}}} {
-        let buffer = self.seek(&{{{name.upper_snake_case}}}_SCHEMA);
+        let buffer = self.buffer.seek_field(&{{{name.upper_snake_case}}}_SCHEMA);
         {{{type_ref.pascal_case}}}::wrap(buffer)
     }
 {{/if ~}}
 {{#if type_info.is_blob}}
     pub fn get_{{{name.snake_case}}}(&mut self) -> BufferAdapter {
-        self.seek(&{{{name.upper_snake_case}}}_SCHEMA)
+        self.buffer.seek_field(&{{{name.upper_snake_case}}}_SCHEMA)
     }
 {{/if ~}}
 {{/each ~}}

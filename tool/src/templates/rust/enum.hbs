@@ -1,23 +1,20 @@
-/** This is generated code */
 use std::result::Result;
+use std::convert::{Into, TryFrom};
 use llsl_runtime::RuntimeError;
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub enum {{{name.pascal_case}}} {
-{{#each cases}}
-    /**
-     * {{{description}}}
-     */
+{{~#each cases}}
     {{{name.pascal_case}}} = {{{value.original}}},
-{{/each}}
+{{~/each}}
 }
 
 impl Into<u32> for {{{name.pascal_case}}} {
     fn into(self) -> u32 {
         match self {
-        {{#each cases}}
-            {{{name.pascal_case}}} => {{{value.original}}},
-        {{/each}}
+        {{~#each cases}}
+            {{{../name.pascal_case}}}::{{{name.pascal_case}}} => {{{value.original}}},
+        {{~/each}}
         }
     }
 }
@@ -27,10 +24,10 @@ impl TryFrom<u32> for {{{name.pascal_case}}} {
 
     fn try_from(value: u32) -> Result<Self, RuntimeError> {
         match value {
-        {{#each cases}}
-             {{{value.original}}} => Ok({{{../name.pascal_case}}}::{{{name.pascal_case}}})
-        {{/each}}
-             _ => Err(RuntimeError::InvalidEnumValue("{{{name.pascal_case}}}", value))
+        {{~#each cases}}
+             {{{value.original}}} => Ok({{{../name.pascal_case}}}::{{{name.pascal_case}}}),
+        {{~/each}}
+             _ => Err(RuntimeError::InvalidEnumValue("{{{name.pascal_case}}}", value)),
         }
     }
 }
