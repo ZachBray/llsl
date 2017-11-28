@@ -13,11 +13,10 @@ static ENUM_TEMPLATE: Template = Template {
     content: include_str!("enum.hbs"),
 };
 
-#[derive(Debug, Serialize, Clone, Eq, PartialEq)]
-struct CodecModel<'a> {
-    codec: &'a Codec,
-    imports: BTreeSet<&'a Identifier>,
-}
+static LIB_TEMPLATE: Template = Template {
+    name: "Rust module",
+    content: include_str!("lib.hbs"),
+};
 
 fn render_enums(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
     for e in &renderer.root_model.enums {
@@ -28,6 +27,12 @@ fn render_enums(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
         )?;
     }
     Ok(())
+}
+
+#[derive(Debug, Serialize, Clone, Eq, PartialEq)]
+struct CodecModel<'a> {
+    codec: &'a Codec,
+    imports: BTreeSet<&'a Identifier>,
 }
 
 impl<'a> CodecModel<'a> {
@@ -53,8 +58,32 @@ fn render_codecs(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
     Ok(())
 }
 
+#[derive(Debug, Serialize, Clone, Eq, PartialEq)]
+struct LibModel<'a> {
+    modules: BTreeSet<&'a Identifier>,
+}
+
+impl<'a> LibModel<'a> {
+    fn new(protocol: &'a Protocol) -> Self {
+        LibModel {
+            modules: protocol
+                .enums
+                .iter()
+                .map(|e| &e.name)
+                .chain(protocol.codecs.iter().map(|c| &c.name))
+                .collect::<BTreeSet<_>>(),
+        }
+    }
+}
+
+fn render_lib(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
+    let model = LibModel::new(renderer.root_model);
+    renderer.render(&LIB_TEMPLATE, &model, "rust/lib.rs")
+}
+
 pub fn render_all(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
     render_enums(renderer)?;
     render_codecs(renderer)?;
+    render_lib(renderer)?;
     Ok(())
 }
