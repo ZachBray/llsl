@@ -1,0 +1,86 @@
+/** This is generated code */
+use llsl_runtime::{BufferAdapter, FieldSchema};
+{{#each imports ~}}
+use super::{{{snake_case}}}::{{{pascal_case}}};
+{{/each}}
+
+{{#each codec.fields }}
+static {{{name.upper_snake_case}}}_SCHEMA: FieldSchema = FieldSchema {
+  name: "{{{name.original}}}",
+  offset_in_bytes: {{{location.offset_bytes}}},
+  bit_mask: {{{location.bit_mask.binary}}}, // {{{location.bit_mask.original}}}
+  shift: {{{location.shift}}},
+};
+{{/each}}
+
+pub struct {{{codec.name.pascal_case}}}<'a> {
+  buffer: BufferAdapter<'a>
+}
+
+impl<'a> {{{codec.name.pascal_case}}}<'a> {
+  pub fn wrap(buffer: BufferAdapter) -> Self {
+    {{{codec.name.pascal_case}}} {
+      buffer
+    }
+  }
+{{#each codec.fields ~}}
+{{#if type_info.is_bool}}
+  pub fn get_{{{name.snake_case}}}(&self) -> bool {
+    self.buffer.read_bool(&{{{name.upper_snake_case}}}_SCHEMA)
+  }
+
+  pub fn set_{{{name.snake_case}}}(&mut self, value: bool) {
+    self.buffer.write_bool(&{{{name.upper_snake_case}}}_SCHEMA, value)
+  }
+{{/if ~}}
+{{#if type_info.is_byte}}
+  pub fn get_{{{name.snake_case}}}(&self) -> u8 {
+    self.buffer.read_u8(&{{{name.upper_snake_case}}}_SCHEMA)
+  }
+
+  pub fn set_{{{name.snake_case}}}(&mut self, value: u8) {
+    self.buffer.write_u8(&{{{name.upper_snake_case}}}_SCHEMA, value)
+  }
+{{/if ~}}
+{{#if type_info.is_u16}}
+  pub fn get_{{{name.snake_case}}}(&self) -> u16 {
+    self.buffer.read_u16(&{{{name.upper_snake_case}}}_SCHEMA)
+  }
+
+  pub fn set_{{{name.snake_case}}}(&mut self, value: u16) {
+    self.buffer.write_u16(&{{{name.upper_snake_case}}}_SCHEMA, value)
+  }
+{{/if ~}}
+{{#if type_info.is_u32}}
+  pub fn get_{{{name.snake_case}}}(&self) -> u32 {
+    self.buffer.read_u32(&{{{name.upper_snake_case}}}_SCHEMA)
+  }
+
+  pub fn set_{{{name.snake_case}}}(&mut self, value: u32) {
+    self.buffer.write_u32(&{{{name.upper_snake_case}}}_SCHEMA, value)
+  }
+{{/if ~}}
+{{#if type_info.is_enum}}
+  pub fn get_{{{name.snake_case}}}(&self) -> {{{type_ref.pascal_case}}} {
+    let value = self.buffer.read_u32(&{{{name.upper_snake_case}}}_SCHEMA);
+    {{{type_ref.pascal_case}}}::from_u32(value)
+  }
+
+  pub fn set_{{{name.snake_case}}}(&mut self, value: {{{type_ref.pascal_case}}}) {
+    let u32_value = value.to_u32();
+    self.buffer.write_u32(&{{{name.upper_snake_case}}}_SCHEMA, u32_value)
+  }
+{{/if ~}}
+{{#if type_info.is_codec}}
+  pub fn get_{{{name.snake_case}}}(&mut self) -> {{{type_ref.pascal_case}}} {
+    let buffer = self.seek(&{{{name.upper_snake_case}}}_SCHEMA);
+    {{{type_ref.pascal_case}}}::wrap(buffer)
+  }
+{{/if ~}}
+{{#if type_info.is_blob}}
+  pub fn get_{{{name.snake_case}}}(&mut self) -> BufferAdapter {
+    self.seek(&{{{name.upper_snake_case}}}_SCHEMA)
+  }
+{{/if ~}}
+{{/each ~}}
+}

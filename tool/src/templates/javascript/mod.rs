@@ -124,5 +124,6 @@ pub fn render_all(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
     render_enums(renderer)?;
     render_codecs(renderer)?;
     render_index(renderer)?;
-    render_package(renderer)
+    render_package(renderer)?;
+    Ok(())
 }

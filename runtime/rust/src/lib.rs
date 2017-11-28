@@ -53,6 +53,14 @@ impl<'a> BufferAdapter<'a> {
         (mask & stored_value) >> shift
     }
 
+    pub fn seek(&mut self, offset_in_bytes: usize) -> BufferAdapter {
+        BufferAdapter::new(&mut self.buffer[offset_in_bytes..])
+    }
+
+    pub fn seek_field(&mut self, schema: &FieldSchema) -> BufferAdapter {
+        self.seek(schema.offset_in_bytes)
+    }
+
     pub fn write_bool(&mut self, schema: &FieldSchema, value: bool) {
         self.write_byte(schema, if value { 1 } else { 0 })
     }
