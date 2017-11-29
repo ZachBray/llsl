@@ -43,12 +43,12 @@ fn render_enums(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
         renderer.render(
             &ENUM_TEMPLATE,
             e,
-            &format!("javascript/{}.js", e.name.camel_case),
+            &format!("{}.js", e.name.camel_case),
         )?;
         renderer.render(
             &ENUM_TYPES_TEMPLATE,
             e,
-            &format!("javascript/{}.d.ts", e.name.camel_case),
+            &format!("{}.d.ts", e.name.camel_case),
         )?;
     }
     Ok(())
@@ -77,12 +77,12 @@ fn render_codecs(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
         renderer.render(
             &CODEC_TEMPLATE,
             &model,
-            &format!("javascript/{}.js", c.name.camel_case),
+            &format!("{}.js", c.name.camel_case),
         )?;
         renderer.render(
             &CODEC_TYPES_TEMPLATE,
             &model,
-            &format!("javascript/{}.d.ts", c.name.camel_case),
+            &format!("{}.d.ts", c.name.camel_case),
         )?;
     }
     Ok(())
@@ -104,20 +104,12 @@ impl<'a> IndexModel<'a> {
 
 fn render_index(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
     let model = IndexModel::new(renderer.root_model);
-    renderer.render(
-        &INDEX_TEMPLATE,
-        &model,
-        "javascript/index.js",
-    )?;
-    renderer.render(&INDEX_TYPES_TEMPLATE, &model, "javascript/index.d.ts")
+    renderer.render(&INDEX_TEMPLATE, &model, "index.js")?;
+    renderer.render(&INDEX_TYPES_TEMPLATE, &model, "index.d.ts")
 }
 
 fn render_package(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
-    renderer.render(
-        &PACKAGE_TEMPLATE,
-        renderer.root_model,
-        "javascript/package.json",
-    )
+    renderer.render(&PACKAGE_TEMPLATE, renderer.root_model, "package.json")
 }
 
 pub fn render_all(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {

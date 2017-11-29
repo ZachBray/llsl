@@ -105,10 +105,18 @@ pub struct Codec {
 }
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
+pub struct Output {
+    pub docs: Option<String>,
+    pub rust: Option<String>,
+    pub javascript: Option<String>,
+}
+
+#[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 pub struct Protocol {
     pub name: Identifier,
     pub description: String,
     pub version: String,
     pub enums: Vec<Enum>,
     pub codecs: Vec<Codec>,
+    pub output: Output,
 }

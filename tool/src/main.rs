@@ -33,15 +33,15 @@ fn compile() -> Try<()> {
     let args = Args::parse()?;
     debug!("Parsed arguments: {:?}", args);
     info!("Opening input file: {:?}", args.input);
-    let input_file = File::open(args.input)?;
+    let input_file = File::open(&args.input)?;
     info!("Parsing input file");
     let document: Document = serde_yaml::from_reader(input_file)?;
     debug!("Parsed input file: {:?}", document);
     info!("Building model");
-    let model = transform(document)?;
+    let model = transform(&args.input, document)?;
     debug!("Built model: {:?}", model);
     info!("Generating code");
-    generate_code(&model, &args.output_directory)
+    generate_code(&model)
 }
 
 fn main() {

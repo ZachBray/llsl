@@ -28,7 +28,7 @@ fn render_enums(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
         renderer.render(
             &ENUM_TEMPLATE,
             &e,
-            &format!("rust/src/{}.rs", e.name.snake_case),
+            &format!("src/{}.rs", e.name.snake_case),
         )?;
     }
     Ok(())
@@ -57,7 +57,7 @@ fn render_codecs(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
         renderer.render(
             &CODEC_TEMPLATE,
             &model,
-            &format!("rust/src/{}.rs", c.name.snake_case),
+            &format!("src/{}.rs", c.name.snake_case),
         )?;
     }
     Ok(())
@@ -83,11 +83,11 @@ impl<'a> LibModel<'a> {
 
 fn render_lib(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
     let model = LibModel::new(renderer.root_model);
-    renderer.render(&LIB_TEMPLATE, &model, "rust/src/lib.rs")
+    renderer.render(&LIB_TEMPLATE, &model, "src/lib.rs")
 }
 
 fn render_package(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
-    renderer.render(&PACKAGE_TEMPLATE, &renderer.root_model, "rust/Cargo.toml")
+    renderer.render(&PACKAGE_TEMPLATE, &renderer.root_model, "Cargo.toml")
 }
 
 pub fn render_all(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {

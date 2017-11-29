@@ -20,6 +20,10 @@ quick_error! {
             cause(err)
             from()
         }
+        FailedToComputeOutputDirectory {
+            description("Failed to compute output directory from input file.")
+            display("Failed to compute output directory from input file.")
+        }
         FailedToExecuteTemplate(err: handlebars::TemplateRenderError) {
             description("Failed to execute code generation template.")
             display("Failed to execute code generation template: {}", err)

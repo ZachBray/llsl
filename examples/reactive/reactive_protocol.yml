@@ -2,6 +2,10 @@ name: Reactive Protocol
 version: 0.0.1
 endianness: big
 
+output:
+  docs: ./
+  javascript: src/javascript/contract
+  rust: src/rust/contract
 enums:
 - name: Frame Type
   bits: 6

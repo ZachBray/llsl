@@ -58,7 +58,18 @@ impl<Model> TemplateRenderer<Model> {
     }
 }
 
-pub fn generate_code(protocol: &Protocol, output_dir: &str) -> Try<()> {
-    let renderer = TemplateRenderer::new(output_dir.to_owned(), protocol);
-    templates::render_all(&renderer)
+pub fn generate_code(protocol: &Protocol) -> Try<()> {
+    for docs_out in protocol.output.docs.iter() {
+        let renderer = TemplateRenderer::new(docs_out.to_owned(), protocol);
+        templates::docs::render_all(&renderer)?;
+    }
+    for javascript_out in protocol.output.javascript.iter() {
+        let renderer = TemplateRenderer::new(javascript_out.to_owned(), protocol);
+        templates::javascript::render_all(&renderer)?;
+    }
+    for rust_out in protocol.output.rust.iter() {
+        let renderer = TemplateRenderer::new(rust_out.to_owned(), protocol);
+        templates::rust::render_all(&renderer)?;
+    }
+    Ok(())
 }

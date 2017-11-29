@@ -1,11 +1,13 @@
 use std::collections::HashMap;
 use std::cmp::{min, max};
+use std::path::Path;
 use super::try::*;
 use super::input::*;
 use super::model::*;
 use super::diagram::*;
 
 struct TransformContext<'a> {
+    input_path: &'a str,
     document: &'a Document,
     codecs_by_name: HashMap<&'a str, &'a CodecDefinition>,
     enums_by_name: HashMap<&'a str, &'a EnumDefinition>,
@@ -252,6 +254,37 @@ impl<'a> TransformContext<'a> {
         })
     }
 
+    fn resolve_output_path(base_directory: &Path, relative_path: &str) -> Try<String> {
+        Ok(
+            base_directory
+                .join(relative_path)
+                .to_str()
+                .ok_or(ToolError::FailedToComputeOutputDirectory)?
+                .to_owned(),
+        )
+    }
+
+    fn build_output(&self) -> Try<Output> {
+        let input_path = Path::new(self.input_path);
+        let base_directory = input_path.parent().ok_or(
+            ToolError::FailedToComputeOutputDirectory,
+        )?;
+        Ok(Output {
+            docs: match self.document.output.docs {
+                Some(ref docs_out) => Some(Self::resolve_output_path(base_directory, &docs_out)?),
+                None => None,
+            },
+            rust: match self.document.output.rust {
+                Some(ref rust_out) => Some(Self::resolve_output_path(base_directory, &rust_out)?),
+                None => None,
+            },
+            javascript: match self.document.output.javascript {
+                Some(ref js_out) => Some(Self::resolve_output_path(base_directory, &js_out)?),
+                None => None,
+            },
+        })
+    }
+
     fn build_model(&mut self) -> Try<Protocol> {
         Ok(Protocol {
             name: Identifier::new(&self.document.name),
@@ -263,11 +296,13 @@ impl<'a> TransformContext<'a> {
                 .map(TransformContext::transform_enum)
                 .collect::<Vec<_>>(),
             codecs: try_collect(self.document.codecs.iter(), |c| self.transform_codec(c))?,
+            output: self.build_output()?,
         })
     }
 
-    fn new(document: &'a Document) -> Self {
+    fn new(input_path: &'a str, document: &'a Document) -> Self {
         TransformContext {
+            input_path,
             document,
             codecs_by_name: document.codecs.iter().fold(
                 HashMap::new(),
@@ -288,7 +323,7 @@ impl<'a> TransformContext<'a> {
     }
 }
 
-pub fn transform(document: Document) -> Try<Protocol> {
-    let mut context = TransformContext::new(&document);
+pub fn transform(input_path: &str, document: Document) -> Try<Protocol> {
+    let mut context = TransformContext::new(input_path, &document);
     context.build_model()
 }

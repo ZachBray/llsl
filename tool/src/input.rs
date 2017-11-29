@@ -108,12 +108,21 @@ pub struct CodecDefinition {
 
 #[serde(deny_unknown_fields)]
 #[derive(Debug, Deserialize, Eq, PartialEq)]
+pub struct OutputDefinition {
+    pub docs: Option<String>,
+    pub rust: Option<String>,
+    pub javascript: Option<String>,
+}
+
+#[serde(deny_unknown_fields)]
+#[derive(Debug, Deserialize, Eq, PartialEq)]
 pub struct Document {
     pub name: String,
     #[serde(default)]
     pub description: String,
     pub version: String,
     pub endianness: Endianness,
+    pub output: OutputDefinition,
     #[serde(default)]
     pub enums: Vec<EnumDefinition>,
     pub codecs: Vec<CodecDefinition>,
