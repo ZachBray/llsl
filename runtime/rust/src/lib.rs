@@ -1,3 +1,4 @@
+#![cfg_attr(test, feature(test))]
 #![cfg_attr(test, feature(plugin))]
 #![cfg_attr(test, plugin(quickcheck_macros))]
 
@@ -6,6 +7,8 @@ extern crate byteorder;
 extern crate quickcheck;
 #[macro_use]
 extern crate quick_error;
+#[cfg(test)]
+extern crate test;
 
 use byteorder::{LE, ByteOrder};
 
@@ -65,6 +68,17 @@ impl<'a> BufferAdapter<'a> {
         (mask & stored_value) >> shift
     }
 
+    pub fn read_u64_unchecked(&self, schema: &FieldSchema) -> u64 {
+        let stored_value = unsafe {
+            let base_ptr = self.buffer.as_ptr();
+            let field_ptr = (base_ptr as usize + schema.offset_in_bytes) as *const u64;
+            *field_ptr
+        };
+        let mask = schema.bit_mask as u64;
+        let shift = schema.shift as u64;
+        (mask & stored_value) >> shift
+    }
+
     pub fn seek(&mut self, offset_in_bytes: usize) -> BufferAdapter {
         BufferAdapter::new(&mut self.buffer[offset_in_bytes..])
     }
@@ -110,11 +124,26 @@ impl<'a> BufferAdapter<'a> {
         let new_stored_value = stored_value_with_hole | ((value << shift) & mask);
         LE::write_u64(buffer, new_stored_value)
     }
+
+    pub fn write_u64_unchecked(&mut self, schema: &FieldSchema, value: u64) {
+        let stored_value = self.read_u64_unchecked(&schema);
+        let mask = schema.bit_mask as u64;
+        let shift = schema.shift as u64;
+        let stored_value_with_hole = stored_value & !mask;
+        let new_stored_value = stored_value_with_hole | ((value << shift) & mask);
+        unsafe {
+            let base_ptr = self.buffer.as_ptr();
+            let field_ptr = (base_ptr as usize + schema.offset_in_bytes) as *mut u64;
+            *field_ptr = new_stored_value
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
 
+    use std::u64;
+    use test::Bencher;
     use quickcheck::{Arbitrary, Gen};
     use super::*;
 
@@ -169,7 +198,7 @@ mod tests {
             };
             Parameters {
                 schema: FieldSchema {
-                    name: "test byte schema",
+                    name: "test schema",
                     bit_mask: mask << shift,
                     offset_in_bytes: g.gen_range(0, BUFFER_SIZE - (N::bits() / 8 + 1)),
                     shift,
@@ -314,5 +343,98 @@ mod tests {
     #[quickcheck]
     fn u64s_round_trip(buffer: Buffer, test: Parameters<u64>) -> bool {
         round_trip(buffer, test)
+    }
+
+    fn benchmark_1000_u64_read_writes<F, G>(b: &mut Bencher, offset: usize, read: F, write: G)
+    where
+        F: Fn(&mut BufferAdapter, &FieldSchema) -> u64,
+        G: Fn(&mut BufferAdapter, &FieldSchema, u64) -> (),
+    {
+        let mut buffer = [0; 8008];
+        let offset_in_bytes = {
+            let ptr = &buffer as *const u8;
+            (4 - (ptr as usize % 4) + offset) % 4
+        };
+        let mut adapter = BufferAdapter::new(&mut buffer);
+        let mut i = 0;
+        let bit_mask = u64::max_value() as usize;
+        b.iter(|| for j in 0..1000 {
+            let schema = FieldSchema {
+                name: "test schema",
+                bit_mask,
+                offset_in_bytes: offset_in_bytes + 8 * j,
+                shift: 0,
+            };
+            write(&mut adapter, &schema, i + 1);
+            i = read(&mut adapter, &schema);
+        });
+    }
+
+    #[bench]
+    fn benchmark_1000_u64_read_writes_with_alignment_0(b: &mut Bencher) {
+        benchmark_1000_u64_read_writes(
+            b,
+            0,
+            |buf, f| buf.read_u64(f),
+            |buf, f, i| buf.write_u64(f, i),
+        );
+    }
+
+    #[bench]
+    fn benchmark_1000_u64_read_writes_with_alignment_1(b: &mut Bencher) {
+        benchmark_1000_u64_read_writes(
+            b,
+            1,
+            |buf, f| buf.read_u64(f),
+            |buf, f, i| buf.write_u64(f, i),
+        );
+    }
+
+    #[bench]
+    fn benchmark_1000_u64_read_writes_with_alignment_2(b: &mut Bencher) {
+        benchmark_1000_u64_read_writes(
+            b,
+            2,
+            |buf, f| buf.read_u64(f),
+            |buf, f, i| buf.write_u64(f, i),
+        );
+    }
+
+    #[bench]
+    fn benchmark_1000_u64_read_writes_with_alignment_3(b: &mut Bencher) {
+        benchmark_1000_u64_read_writes(
+            b,
+            3,
+            |buf, f| buf.read_u64(f),
+            |buf, f, i| buf.write_u64(f, i),
+        );
+    }
+
+    #[bench]
+    fn benchmark_1000_u64_read_writes_unchecked_with_alignment_0(b: &mut Bencher) {
+        benchmark_1000_u64_read_writes(b, 0, |buf, f| buf.read_u64_unchecked(f), |buf, f, i| {
+            buf.write_u64_unchecked(f, i)
+        });
+    }
+
+    #[bench]
+    fn benchmark_1000_u64_read_writes_unchecked_with_alignment_1(b: &mut Bencher) {
+        benchmark_1000_u64_read_writes(b, 1, |buf, f| buf.read_u64_unchecked(f), |buf, f, i| {
+            buf.write_u64_unchecked(f, i)
+        });
+    }
+
+    #[bench]
+    fn benchmark_1000_u64_read_writes_unchecked_with_alignment_2(b: &mut Bencher) {
+        benchmark_1000_u64_read_writes(b, 2, |buf, f| buf.read_u64_unchecked(f), |buf, f, i| {
+            buf.write_u64_unchecked(f, i)
+        });
+    }
+
+    #[bench]
+    fn benchmark_1000_u64_read_writes_unchecked_with_alignment_3(b: &mut Bencher) {
+        benchmark_1000_u64_read_writes(b, 3, |buf, f| buf.read_u64_unchecked(f), |buf, f, i| {
+            buf.write_u64_unchecked(f, i)
+        });
     }
 }

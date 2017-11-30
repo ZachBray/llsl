@@ -6,6 +6,7 @@ output:
   docs: ./
   javascript: src/javascript/contract
   rust: src/rust/contract
+
 enums:
 - name: Frame Type
   bits: 6
