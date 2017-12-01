@@ -3,9 +3,11 @@ name = "llsl_runtime"
 version = "0.1.0"
 
 [dependencies]
-byteorder = "*"
 quick-error = "*"
 
 [dev-dependencies]
+byteorder = "*"
+num = "*"
+rand = "*"
 quickcheck = "*"
 quickcheck_macros = "*"

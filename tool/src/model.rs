@@ -57,7 +57,7 @@ pub struct Enum {
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 pub struct TypeInfo {
     // The intermediate type used to read/write
-    pub access_type: Option<Identifier>,
+    pub access_type: Identifier,
     pub is_bool: bool,
     pub is_numeric: bool,
     pub is_byte: bool,
@@ -71,6 +71,7 @@ pub struct TypeInfo {
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 pub struct MemoryLocation {
     pub offset_bytes: u32,
+    pub minimum_size_bytes: u32,
     pub bit_mask: Unsigned,
     pub shift: u32,
 }
@@ -102,6 +103,7 @@ pub struct Codec {
     pub description: String,
     pub diagram: String,
     pub fields: Vec<Field>,
+    pub minimum_size_bytes: u32,
 }
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]

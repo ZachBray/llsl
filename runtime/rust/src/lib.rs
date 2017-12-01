@@ -2,15 +2,20 @@
 #![cfg_attr(test, feature(plugin))]
 #![cfg_attr(test, plugin(quickcheck_macros))]
 
+#[cfg(test)]
 extern crate byteorder;
+#[cfg(test)]
+extern crate num;
 #[cfg(test)]
 extern crate quickcheck;
 #[macro_use]
 extern crate quick_error;
 #[cfg(test)]
+extern crate rand;
+#[cfg(test)]
 extern crate test;
 
-use byteorder::{LE, ByteOrder};
+use std::ops::{BitAnd, BitOr, Shr, Not, Shl};
 
 quick_error! {
     #[derive(Debug)]
@@ -19,19 +24,75 @@ quick_error! {
             description("Failed to deserialize enum value.")
             display("Failed to deserialize {} as a {}", value, enum_name)
         }
+        Overflow(codec_name: &'static str, codec_size: usize, buffer_size: usize) {
+            description("Not enough space in buffer for codec.")
+            display("Not enough space in the buffer (remaining = {} bytes) for {} (min. size = {})",
+                    buffer_size, codec_name, codec_size)
+        }
     }
 }
 
 #[derive(Clone, Debug)]
-pub struct FieldSchema {
+pub struct FieldSchema<M> {
     pub name: &'static str,
     pub offset_in_bytes: usize,
-    pub bit_mask: usize,
-    pub shift: usize,
+    pub bit_mask: M,
+    pub shift: u8,
 }
 
 pub struct BufferAdapter<'a> {
     buffer: &'a mut [u8],
+}
+
+pub trait Serializable<M> {
+    fn read(adapter: &BufferAdapter, schema: &FieldSchema<M>) -> Self;
+    fn write(adapter: &mut BufferAdapter, schema: &FieldSchema<M>, value: Self);
+}
+
+impl<T> Serializable<T> for T
+where
+    T: From<u8>,
+    T: BitAnd<Output = T>,
+    T: BitOr<Output = T>,
+    T: Not<Output = T>,
+    T: Shl<Self, Output = T>,
+    T: Shr<Self, Output = T>,
+    T: Copy,
+{
+    fn read(adapter: &BufferAdapter, schema: &FieldSchema<T>) -> Self {
+        let stored_value = unsafe {
+            let base_ptr = adapter.buffer.as_ptr();
+            let field_ptr = (base_ptr as usize + schema.offset_in_bytes) as *const Self;
+            *field_ptr
+        };
+        let mask = schema.bit_mask;
+        let shift = Self::from(schema.shift);
+        (mask & stored_value) >> shift
+    }
+
+    fn write(adapter: &mut BufferAdapter, schema: &FieldSchema<T>, value: Self) {
+        let stored_value = Self::read(&adapter, &schema);
+        let mask = schema.bit_mask;
+        let shift = Self::from(schema.shift);
+        let stored_value_with_hole = stored_value & !mask;
+        let new_stored_value = stored_value_with_hole | ((value << shift) & mask);
+        unsafe {
+            let base_ptr = adapter.buffer.as_ptr();
+            let field_ptr = (base_ptr as usize + schema.offset_in_bytes) as *mut Self;
+            *field_ptr = new_stored_value
+        }
+    }
+}
+
+impl Serializable<u8> for bool {
+    fn read(adapter: &BufferAdapter, schema: &FieldSchema<u8>) -> Self {
+        u8::read(adapter, schema) != 0
+    }
+
+    fn write(adapter: &mut BufferAdapter, schema: &FieldSchema<u8>, value: Self) {
+        let u8_value = if value { 1 } else { 0 };
+        u8::write(adapter, schema, u8_value)
+    }
 }
 
 impl<'a> BufferAdapter<'a> {
@@ -39,103 +100,16 @@ impl<'a> BufferAdapter<'a> {
         BufferAdapter { buffer }
     }
 
-    pub fn read_bool(&self, schema: &FieldSchema) -> bool {
-        self.read_byte(schema) != 0
-    }
-
-    pub fn read_byte(&self, schema: &FieldSchema) -> u8 {
-        self.read_u16(schema) as u8
-    }
-
-    pub fn read_u16(&self, schema: &FieldSchema) -> u16 {
-        let stored_value = LE::read_u16(&self.buffer[schema.offset_in_bytes..]);
-        let mask = schema.bit_mask as u16;
-        let shift = schema.shift as u16;
-        (mask & stored_value) >> shift
-    }
-
-    pub fn read_u32(&self, schema: &FieldSchema) -> u32 {
-        let stored_value = LE::read_u32(&self.buffer[schema.offset_in_bytes..]);
-        let mask = schema.bit_mask as u32;
-        let shift = schema.shift as u32;
-        (mask & stored_value) >> shift
-    }
-
-    pub fn read_u64(&self, schema: &FieldSchema) -> u64 {
-        let stored_value = LE::read_u64(&self.buffer[schema.offset_in_bytes..]);
-        let mask = schema.bit_mask as u64;
-        let shift = schema.shift as u64;
-        (mask & stored_value) >> shift
-    }
-
-    pub fn read_u64_unchecked(&self, schema: &FieldSchema) -> u64 {
-        let stored_value = unsafe {
-            let base_ptr = self.buffer.as_ptr();
-            let field_ptr = (base_ptr as usize + schema.offset_in_bytes) as *const u64;
-            *field_ptr
-        };
-        let mask = schema.bit_mask as u64;
-        let shift = schema.shift as u64;
-        (mask & stored_value) >> shift
+    pub fn len(&self) -> usize {
+        self.buffer.len()
     }
 
     pub fn seek(&mut self, offset_in_bytes: usize) -> BufferAdapter {
         BufferAdapter::new(&mut self.buffer[offset_in_bytes..])
     }
 
-    pub fn seek_field(&mut self, schema: &FieldSchema) -> BufferAdapter {
+    pub fn seek_field<M>(&mut self, schema: &FieldSchema<M>) -> BufferAdapter {
         self.seek(schema.offset_in_bytes)
-    }
-
-    pub fn write_bool(&mut self, schema: &FieldSchema, value: bool) {
-        self.write_byte(schema, if value { 1 } else { 0 })
-    }
-
-    pub fn write_byte(&mut self, schema: &FieldSchema, value: u8) {
-        self.write_u16(schema, value as u16)
-    }
-
-    pub fn write_u16(&mut self, schema: &FieldSchema, value: u16) {
-        let buffer = &mut self.buffer[schema.offset_in_bytes..];
-        let stored_value = LE::read_u16(buffer);
-        let mask = schema.bit_mask as u16;
-        let shift = schema.shift as u16;
-        let stored_value_with_hole = stored_value & !mask;
-        let new_stored_value = stored_value_with_hole | ((value << shift) & mask);
-        LE::write_u16(buffer, new_stored_value)
-    }
-
-    pub fn write_u32(&mut self, schema: &FieldSchema, value: u32) {
-        let buffer = &mut self.buffer[schema.offset_in_bytes..];
-        let stored_value = LE::read_u32(buffer);
-        let mask = schema.bit_mask as u32;
-        let shift = schema.shift as u32;
-        let stored_value_with_hole = stored_value & !mask;
-        let new_stored_value = stored_value_with_hole | ((value << shift) & mask);
-        LE::write_u32(buffer, new_stored_value)
-    }
-
-    pub fn write_u64(&mut self, schema: &FieldSchema, value: u64) {
-        let buffer = &mut self.buffer[schema.offset_in_bytes..];
-        let stored_value = LE::read_u64(buffer);
-        let mask = schema.bit_mask as u64;
-        let shift = schema.shift as u64;
-        let stored_value_with_hole = stored_value & !mask;
-        let new_stored_value = stored_value_with_hole | ((value << shift) & mask);
-        LE::write_u64(buffer, new_stored_value)
-    }
-
-    pub fn write_u64_unchecked(&mut self, schema: &FieldSchema, value: u64) {
-        let stored_value = self.read_u64_unchecked(&schema);
-        let mask = schema.bit_mask as u64;
-        let shift = schema.shift as u64;
-        let stored_value_with_hole = stored_value & !mask;
-        let new_stored_value = stored_value_with_hole | ((value << shift) & mask);
-        unsafe {
-            let base_ptr = self.buffer.as_ptr();
-            let field_ptr = (base_ptr as usize + schema.offset_in_bytes) as *mut u64;
-            *field_ptr = new_stored_value
-        }
     }
 }
 
@@ -143,7 +117,11 @@ impl<'a> BufferAdapter<'a> {
 mod tests {
 
     use std::u64;
+    use std::mem::size_of;
+    use std::ops::*;
     use test::Bencher;
+    use byteorder::{LE, ByteOrder};
+    use num::traits::*;
     use quickcheck::{Arbitrary, Gen};
     use super::*;
 
@@ -162,56 +140,54 @@ mod tests {
 
     #[derive(Clone, Debug)]
     struct Parameters<N> {
-        schema: FieldSchema,
+        schema: FieldSchema<N>,
         old_value: N,
         new_value: N,
     }
 
-    trait GeneratableNumber {
-        fn bits() -> usize;
-
-        fn shiftable_bits() -> usize {
-            Self::bits()
-        }
-
-        fn gen<G: Gen>(g: &mut G, max: usize) -> Self;
-
-        fn read(buffer: &BufferAdapter, schema: &FieldSchema) -> Self;
-
-        fn write(buffer: &mut BufferAdapter, schema: &FieldSchema, value: Self);
-    }
-
     impl<N> Arbitrary for Parameters<N>
     where
-        N: GeneratableNumber + Send + Clone + 'static,
+        N: Send,
+        N: Copy,
+        N: 'static,
+        N: Bounded,
+        N: Zero,
+        N: One,
+        N: Into<u64>,
+        N: Shl<N, Output = N>,
+        N: BitOr<Output = N>,
+        N: From<u8>,
+        N: PartialOrd,
+        N: rand::distributions::range::SampleRange,
     {
         fn arbitrary<G: Gen>(g: &mut G) -> Self {
-            let bit_count = g.gen_range(1, N::bits() + 1);
-            let mut mask = 0;
+            let bits = size_of::<N>() as u8 * 8u8;
+            let bit_count = g.gen_range(1, bits + 1);
+            let mut mask = N::zero();
             for _ in 0..bit_count {
-                mask = (mask << 1) | 1;
+                mask = (mask << N::one()) | N::one();
             }
-            let shift = if bit_count == N::shiftable_bits() {
-                0
+            let shift = if bit_count == bits {
+                0u8
             } else {
-                g.gen_range(0, N::shiftable_bits() - bit_count)
+                g.gen_range(0u8, bits - bit_count)
             };
             Parameters {
                 schema: FieldSchema {
                     name: "test schema",
-                    bit_mask: mask << shift,
-                    offset_in_bytes: g.gen_range(0, BUFFER_SIZE - (N::bits() / 8 + 1)),
-                    shift,
+                    bit_mask: mask << N::from(shift),
+                    offset_in_bytes: g.gen_range(0, BUFFER_SIZE - (bits as usize / 8 + 1)),
+                    shift: shift as u8,
                 },
-                old_value: N::gen(g, mask),
-                new_value: N::gen(g, mask),
+                old_value: g.gen_range(N::zero(), mask),
+                new_value: g.gen_range(N::zero(), mask),
             }
         }
     }
 
     fn round_trip<N>(mut buffer: Buffer, test: Parameters<N>) -> bool
     where
-        N: GeneratableNumber + Eq + Copy,
+        N: Eq + Copy + Serializable<N>,
     {
         // Act
         {
@@ -225,50 +201,25 @@ mod tests {
         observed == test.new_value
     }
 
-    impl GeneratableNumber for bool {
-        fn bits() -> usize {
-            1
-        }
-
-        fn shiftable_bits() -> usize {
-            8
-        }
-
-        fn gen<G: Gen>(g: &mut G, _: usize) -> Self {
-            g.gen()
-        }
-
-        // TODO: Structue this differently... we shouldn't need to repeat this here
-        fn read(buffer: &BufferAdapter, schema: &FieldSchema) -> Self {
-            buffer.read_bool(schema)
-        }
-
-        fn write(buffer: &mut BufferAdapter, schema: &FieldSchema, value: Self) {
-            buffer.write_bool(schema, value)
-        }
-    }
-
     #[quickcheck]
-    fn bools_round_trip(buffer: Buffer, test: Parameters<bool>) -> bool {
-        round_trip(buffer, test)
-    }
-
-    impl GeneratableNumber for u8 {
-        fn bits() -> usize {
-            8
+    fn bools_round_trip(mut buffer: Buffer, test: Parameters<u8>) -> bool {
+        // Arrange
+        let schema = FieldSchema {
+            name: test.schema.name,
+            bit_mask: 1 << test.schema.shift,
+            offset_in_bytes: test.schema.offset_in_bytes,
+            shift: test.schema.shift as u8,
+        };
+        // Act
+        {
+            let mut adapter = BufferAdapter::new(&mut buffer.0);
+            bool::write(&mut adapter, &schema, test.old_value != 0);
+            bool::write(&mut adapter, &schema, test.new_value != 0);
         }
-
-        fn gen<G: Gen>(g: &mut G, max: usize) -> Self {
-            g.gen_range(0, max as u8)
-        }
-
-        fn read(buffer: &BufferAdapter, schema: &FieldSchema) -> Self {
-            buffer.read_byte(schema)
-        }
-
-        fn write(buffer: &mut BufferAdapter, schema: &FieldSchema, value: Self) {
-            buffer.write_byte(schema, value)
-        }
+        let adapter = BufferAdapter::new(&mut buffer.0);
+        let observed = bool::read(&adapter, &test.schema);
+        // Assert
+        observed == (test.new_value != 0)
     }
 
     #[quickcheck]
@@ -276,68 +227,14 @@ mod tests {
         round_trip(buffer, test)
     }
 
-    impl GeneratableNumber for u16 {
-        fn bits() -> usize {
-            16
-        }
-
-        fn gen<G: Gen>(g: &mut G, max: usize) -> Self {
-            g.gen_range(0, max as u16)
-        }
-
-        fn read(buffer: &BufferAdapter, schema: &FieldSchema) -> Self {
-            buffer.read_u16(schema)
-        }
-
-        fn write(buffer: &mut BufferAdapter, schema: &FieldSchema, value: Self) {
-            buffer.write_u16(schema, value)
-        }
-    }
-
     #[quickcheck]
     fn u16s_round_trip(buffer: Buffer, test: Parameters<u16>) -> bool {
         round_trip(buffer, test)
     }
 
-    impl GeneratableNumber for u32 {
-        fn bits() -> usize {
-            32
-        }
-
-        fn gen<G: Gen>(g: &mut G, max: usize) -> Self {
-            g.gen_range(0, max as u32)
-        }
-
-        fn read(buffer: &BufferAdapter, schema: &FieldSchema) -> Self {
-            buffer.read_u32(schema)
-        }
-
-        fn write(buffer: &mut BufferAdapter, schema: &FieldSchema, value: Self) {
-            buffer.write_u32(schema, value)
-        }
-    }
-
     #[quickcheck]
     fn u32s_round_trip(buffer: Buffer, test: Parameters<u32>) -> bool {
         round_trip(buffer, test)
-    }
-
-    impl GeneratableNumber for u64 {
-        fn bits() -> usize {
-            64
-        }
-
-        fn gen<G: Gen>(g: &mut G, max: usize) -> Self {
-            g.gen_range(0, max as u64)
-        }
-
-        fn read(buffer: &BufferAdapter, schema: &FieldSchema) -> Self {
-            buffer.read_u64(schema)
-        }
-
-        fn write(buffer: &mut BufferAdapter, schema: &FieldSchema, value: Self) {
-            buffer.write_u64(schema, value)
-        }
     }
 
     #[quickcheck]
@@ -347,8 +244,8 @@ mod tests {
 
     fn benchmark_1000_u64_read_writes<F, G>(b: &mut Bencher, offset: usize, read: F, write: G)
     where
-        F: Fn(&mut BufferAdapter, &FieldSchema) -> u64,
-        G: Fn(&mut BufferAdapter, &FieldSchema, u64) -> (),
+        F: Fn(&mut BufferAdapter, &FieldSchema<u64>) -> u64,
+        G: Fn(&mut BufferAdapter, &FieldSchema<u64>, u64) -> (),
     {
         let mut buffer = [0; 8008];
         let offset_in_bytes = {
@@ -357,7 +254,7 @@ mod tests {
         };
         let mut adapter = BufferAdapter::new(&mut buffer);
         let mut i = 0;
-        let bit_mask = u64::max_value() as usize;
+        let bit_mask = u64::max_value();
         b.iter(|| for j in 0..1000 {
             let schema = FieldSchema {
                 name: "test schema",
@@ -370,71 +267,76 @@ mod tests {
         });
     }
 
+    fn read_u64_checked(adapter: &BufferAdapter, schema: &FieldSchema<u64>) -> u64 {
+        let stored_value = LE::read_u64(&adapter.buffer[schema.offset_in_bytes..]);
+        let mask = schema.bit_mask as u64;
+        let shift = schema.shift as u64;
+        (mask & stored_value) >> shift
+    }
+
+    fn write_u64_checked(adapter: &mut BufferAdapter, schema: &FieldSchema<u64>, value: u64) {
+        let buffer = &mut adapter.buffer[schema.offset_in_bytes..];
+        let stored_value = LE::read_u64(buffer);
+        let mask = schema.bit_mask as u64;
+        let shift = schema.shift as u64;
+        let stored_value_with_hole = stored_value & !mask;
+        let new_stored_value = stored_value_with_hole | ((value << shift) & mask);
+        LE::write_u64(buffer, new_stored_value)
+    }
+
     #[bench]
     fn benchmark_1000_u64_read_writes_with_alignment_0(b: &mut Bencher) {
-        benchmark_1000_u64_read_writes(
-            b,
-            0,
-            |buf, f| buf.read_u64(f),
-            |buf, f, i| buf.write_u64(f, i),
-        );
+        benchmark_1000_u64_read_writes(b, 0, |buf, f| read_u64_checked(buf, f), |buf, f, i| {
+            write_u64_checked(buf, f, i)
+        });
     }
 
     #[bench]
     fn benchmark_1000_u64_read_writes_with_alignment_1(b: &mut Bencher) {
-        benchmark_1000_u64_read_writes(
-            b,
-            1,
-            |buf, f| buf.read_u64(f),
-            |buf, f, i| buf.write_u64(f, i),
-        );
+        benchmark_1000_u64_read_writes(b, 1, |buf, f| read_u64_checked(buf, f), |buf, f, i| {
+            write_u64_checked(buf, f, i)
+        });
     }
 
     #[bench]
     fn benchmark_1000_u64_read_writes_with_alignment_2(b: &mut Bencher) {
-        benchmark_1000_u64_read_writes(
-            b,
-            2,
-            |buf, f| buf.read_u64(f),
-            |buf, f, i| buf.write_u64(f, i),
-        );
+        benchmark_1000_u64_read_writes(b, 2, |buf, f| read_u64_checked(buf, f), |buf, f, i| {
+            write_u64_checked(buf, f, i)
+        });
     }
 
     #[bench]
     fn benchmark_1000_u64_read_writes_with_alignment_3(b: &mut Bencher) {
-        benchmark_1000_u64_read_writes(
-            b,
-            3,
-            |buf, f| buf.read_u64(f),
-            |buf, f, i| buf.write_u64(f, i),
-        );
+        benchmark_1000_u64_read_writes(b, 3, |buf, f| read_u64_checked(buf, f), |buf, f, i| {
+            write_u64_checked(buf, f, i)
+        });
     }
 
     #[bench]
     fn benchmark_1000_u64_read_writes_unchecked_with_alignment_0(b: &mut Bencher) {
-        benchmark_1000_u64_read_writes(b, 0, |buf, f| buf.read_u64_unchecked(f), |buf, f, i| {
-            buf.write_u64_unchecked(f, i)
+        benchmark_1000_u64_read_writes(b, 0, |buf, f| u64::read(buf, f), |buf, f, i| {
+            u64::write(buf, f, i)
         });
     }
 
     #[bench]
     fn benchmark_1000_u64_read_writes_unchecked_with_alignment_1(b: &mut Bencher) {
-        benchmark_1000_u64_read_writes(b, 1, |buf, f| buf.read_u64_unchecked(f), |buf, f, i| {
-            buf.write_u64_unchecked(f, i)
+        benchmark_1000_u64_read_writes(b, 1, |buf, f| u64::read(buf, f), |buf, f, i| {
+            u64::write(buf, f, i)
         });
     }
 
     #[bench]
     fn benchmark_1000_u64_read_writes_unchecked_with_alignment_2(b: &mut Bencher) {
-        benchmark_1000_u64_read_writes(b, 2, |buf, f| buf.read_u64_unchecked(f), |buf, f, i| {
-            buf.write_u64_unchecked(f, i)
+        benchmark_1000_u64_read_writes(b, 2, |buf, f| u64::read(buf, f), |buf, f, i| {
+            u64::write(buf, f, i)
         });
     }
 
     #[bench]
     fn benchmark_1000_u64_read_writes_unchecked_with_alignment_3(b: &mut Bencher) {
-        benchmark_1000_u64_read_writes(b, 3, |buf, f| buf.read_u64_unchecked(f), |buf, f, i| {
-            buf.write_u64_unchecked(f, i)
+        benchmark_1000_u64_read_writes(b, 3, |buf, f| u64::read(buf, f), |buf, f, i| {
+            u64::write(buf, f, i)
         });
     }
 }

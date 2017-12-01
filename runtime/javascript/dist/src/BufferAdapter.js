@@ -7,17 +7,17 @@ var BufferAdapter = /** @class */ (function () {
         this.isLittleEndian = isLittleEndian;
     }
     BufferAdapter.prototype.readBool = function (schema, codecOffsetInBytes) {
-        return this.readByte(schema, codecOffsetInBytes) !== 0;
+        return this.readU8(schema, codecOffsetInBytes) !== 0;
     };
     BufferAdapter.prototype.writeBool = function (schema, codecOffsetInBytes, value) {
-        this.writeByte(schema, codecOffsetInBytes, value ? 1 : 0);
+        this.writeU8(schema, codecOffsetInBytes, value ? 1 : 0);
     };
-    BufferAdapter.prototype.readByte = function (schema, codecOffsetInBytes) {
+    BufferAdapter.prototype.readU8 = function (schema, codecOffsetInBytes) {
         var absoluteOffsetInBytes = codecOffsetInBytes + schema.offsetInBytes;
         var data = this.view.getUint8(absoluteOffsetInBytes);
         return (data & schema.bitMask) >> schema.shift;
     };
-    BufferAdapter.prototype.writeByte = function (schema, codecOffsetInBytes, value) {
+    BufferAdapter.prototype.writeU8 = function (schema, codecOffsetInBytes, value) {
         var absoluteOffsetInBytes = codecOffsetInBytes + schema.offsetInBytes;
         var currentData = this.view.getUint8(absoluteOffsetInBytes);
         var newData = (currentData & ~schema.bitMask) | ((value << schema.shift) & schema.bitMask);

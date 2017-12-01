@@ -1,12 +1,12 @@
 use std::result::Result;
 use std::convert::TryFrom;
-use llsl_runtime::{BufferAdapter, FieldSchema, RuntimeError};
+use llsl_runtime::{BufferAdapter, FieldSchema, RuntimeError, Serializable};
 {{#each imports ~}}
 use super::{{{snake_case}}}::{{{pascal_case}}};
 {{/each}}
 
 {{#each codec.fields }}
-static {{{name.upper_snake_case}}}_SCHEMA: FieldSchema = FieldSchema {
+static {{{name.upper_snake_case}}}_SCHEMA: FieldSchema<{{{type_info.access_type.original}}}> = FieldSchema {
     name: "{{{name.original}}}",
     offset_in_bytes: {{{location.offset_bytes}}},
     bit_mask: {{{location.bit_mask.binary}}}, // {{{location.bit_mask.original}}}
@@ -19,7 +19,21 @@ pub struct {{{codec.name.pascal_case}}}<'a> {
 }
 
 impl<'a> {{{codec.name.pascal_case}}}<'a> {
-    pub fn wrap(buffer: BufferAdapter<'a>) -> Self {
+    pub fn wrap(buffer: BufferAdapter<'a>) -> Result<Self, RuntimeError> {
+        if buffer.len() < {{{codec.minimum_size_bytes}}} {
+            Err(RuntimeError::Overflow(
+                "{{{codec.name.pascal_case}}}",
+                {{{codec.minimum_size_bytes}}},
+                buffer.len()
+            ))
+        } else {
+            Ok({{{codec.name.pascal_case}}} {
+                buffer
+            })
+        }
+    }
+
+    pub fn wrap_unchecked(buffer: BufferAdapter<'a>) -> Self {
         {{{codec.name.pascal_case}}} {
             buffer
         }
@@ -27,55 +41,55 @@ impl<'a> {{{codec.name.pascal_case}}}<'a> {
 {{#each codec.fields ~}}
 {{#if type_info.is_bool}}
     pub fn get_{{{name.snake_case}}}(&self) -> bool {
-        self.buffer.read_bool(&{{{name.upper_snake_case}}}_SCHEMA)
+        bool::read(&self.buffer, &{{{name.upper_snake_case}}}_SCHEMA)
     }
 
     pub fn set_{{{name.snake_case}}}(&mut self, value: bool) {
-        self.buffer.write_bool(&{{{name.upper_snake_case}}}_SCHEMA, value)
+        bool::write(&mut self.buffer, &{{{name.upper_snake_case}}}_SCHEMA, value)
     }
 {{/if ~}}
 {{#if type_info.is_byte}}
     pub fn get_{{{name.snake_case}}}(&self) -> u8 {
-        self.buffer.read_u8(&{{{name.upper_snake_case}}}_SCHEMA)
+        u8::read(&self.buffer, &{{{name.upper_snake_case}}}_SCHEMA)
     }
 
     pub fn set_{{{name.snake_case}}}(&mut self, value: u8) {
-        self.buffer.write_u8(&{{{name.upper_snake_case}}}_SCHEMA, value)
+        u8.write(&mut self.buffer, &{{{name.upper_snake_case}}}_SCHEMA, value)
     }
 {{/if ~}}
 {{#if type_info.is_u16}}
     pub fn get_{{{name.snake_case}}}(&self) -> u16 {
-        self.buffer.read_u16(&{{{name.upper_snake_case}}}_SCHEMA)
+        u16::read(&self.buffer, &{{{name.upper_snake_case}}}_SCHEMA)
     }
 
     pub fn set_{{{name.snake_case}}}(&mut self, value: u16) {
-        self.buffer.write_u16(&{{{name.upper_snake_case}}}_SCHEMA, value)
+        u16::write(&mut self.buffer, &{{{name.upper_snake_case}}}_SCHEMA, value)
     }
 {{/if ~}}
 {{#if type_info.is_u32}}
     pub fn get_{{{name.snake_case}}}(&self) -> u32 {
-      self.buffer.read_u32(&{{{name.upper_snake_case}}}_SCHEMA)
+      u32::read(&self.buffer, &{{{name.upper_snake_case}}}_SCHEMA)
     }
 
     pub fn set_{{{name.snake_case}}}(&mut self, value: u32) {
-      self.buffer.write_u32(&{{{name.upper_snake_case}}}_SCHEMA, value)
+      u32::write(&mut self.buffer, &{{{name.upper_snake_case}}}_SCHEMA, value)
     }
 {{/if ~}}
 {{#if type_info.is_enum}}
     pub fn get_{{{name.snake_case}}}(&self) -> Result<{{{type_ref.pascal_case}}}, RuntimeError> {
-        let value = self.buffer.read_u32(&{{{name.upper_snake_case}}}_SCHEMA);
+        let value = u32::read(&self.buffer, &{{{name.upper_snake_case}}}_SCHEMA);
         {{{type_ref.pascal_case}}}::try_from(value)
     }
 
     pub fn set_{{{name.snake_case}}}(&mut self, value: {{{type_ref.pascal_case}}}) {
         let u32_value: u32 = value.into();
-        self.buffer.write_u32(&{{{name.upper_snake_case}}}_SCHEMA, u32_value)
+        u32::write(&mut self.buffer, &{{{name.upper_snake_case}}}_SCHEMA, u32_value)
     }
 {{/if ~}}
 {{#if type_info.is_codec}}
     pub fn get_{{{name.snake_case}}}(&mut self) -> {{{type_ref.pascal_case}}} {
         let buffer = self.buffer.seek_field(&{{{name.upper_snake_case}}}_SCHEMA);
-        {{{type_ref.pascal_case}}}::wrap(buffer)
+        {{{type_ref.pascal_case}}}::wrap_unchecked(buffer)
     }
 {{/if ~}}
 {{#if type_info.is_blob}}

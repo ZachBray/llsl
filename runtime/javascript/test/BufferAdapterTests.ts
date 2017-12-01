@@ -47,11 +47,11 @@ describe("BufferAdapter", () => {
   context("numerics", () => {
 
     const supportedNumerics = [{
-      kind: "byte",
+      kind: "u8",
       maxBits: 8,
       value: jsc.uint8,
-      read: () => adapter.readByte.bind(adapter),
-      write: () => adapter.writeByte.bind(adapter),
+      read: () => adapter.readU8.bind(adapter),
+      write: () => adapter.writeU8.bind(adapter),
     }, {
       kind: "u16",
       maxBits: 16,

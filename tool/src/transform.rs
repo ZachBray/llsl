@@ -110,7 +110,7 @@ impl<'a> TransformContext<'a> {
 
     fn transform_type_info(&mut self, type_ref: &'a TypeReference) -> TypeInfo {
         let mut info = TypeInfo {
-            access_type: None,
+            access_type: Identifier::new("u32"),
             is_bool: false,
             is_numeric: false,
             is_byte: false,
@@ -122,30 +122,26 @@ impl<'a> TransformContext<'a> {
         };
         match type_ref {
             &TypeReference::Bool => {
-                info.access_type = Some(Identifier::new("bool"));
+                info.access_type = Identifier::new("bool");
                 info.is_bool = true;
             }
             &TypeReference::Byte => {
-                info.access_type = Some(Identifier::new("byte"));
+                info.access_type = Identifier::new("u8");
                 info.is_numeric = true;
                 info.is_byte = true;
             }
             &TypeReference::U16 => {
-                info.access_type = Some(Identifier::new("u16"));
+                info.access_type = Identifier::new("u16");
                 info.is_numeric = true;
                 info.is_u16 = true;
             }
             &TypeReference::U32 => {
-                info.access_type = Some(Identifier::new("u32"));
                 info.is_numeric = true;
                 info.is_u32 = true;
             }
             &TypeReference::Custom { ref name } => {
                 let key: &str = name;
                 info.is_enum = self.enums_by_name.contains_key(&key);
-                if info.is_enum {
-                    info.access_type = Some(Identifier::new("u32"));
-                }
                 info.is_codec = self.codecs_by_name.contains_key(&key);
             }
             &TypeReference::Blob { .. } => {
@@ -182,6 +178,7 @@ impl<'a> TransformContext<'a> {
             },
             location: MemoryLocation {
                 offset_bytes: def.offset_bytes,
+                minimum_size_bytes: bits.map(|b| (b / 8) + min(1, b % 8)).unwrap_or(0),
                 bit_mask: bits.map(|b| {
                     create_bit_mask(
                         b,
@@ -246,11 +243,18 @@ impl<'a> TransformContext<'a> {
 
         let diagram = self.create_diagram(def, &mut fields)?;
 
+        let minimum_size_bytes = fields
+            .iter()
+            .map(|f| f.location.offset_bytes + f.location.minimum_size_bytes)
+            .max()
+            .unwrap_or(0);
+
         Ok(Codec {
             name: Identifier::new(&def.name),
             description: def.description.to_owned(),
             diagram: diagram.draw(),
             fields,
+            minimum_size_bytes,
         })
     }
 

@@ -13,20 +13,20 @@ export class BufferAdapter {
   constructor(private view: DataView, private isLittleEndian: boolean = true) {}
 
   public readBool(schema: IFieldSchema, codecOffsetInBytes: number) {
-    return this.readByte(schema, codecOffsetInBytes) !== 0;
+    return this.readU8(schema, codecOffsetInBytes) !== 0;
   }
 
   public writeBool(schema: IFieldSchema, codecOffsetInBytes: number, value: boolean) {
-    this.writeByte(schema, codecOffsetInBytes, value ? 1 : 0);
+    this.writeU8(schema, codecOffsetInBytes, value ? 1 : 0);
   }
 
-  public readByte(schema: IFieldSchema, codecOffsetInBytes: number) {
+  public readU8(schema: IFieldSchema, codecOffsetInBytes: number) {
     const absoluteOffsetInBytes = codecOffsetInBytes + schema.offsetInBytes;
     const data = this.view.getUint8(absoluteOffsetInBytes);
     return (data & schema.bitMask) >> schema.shift;
   }
 
-  public writeByte(schema: IFieldSchema, codecOffsetInBytes: number, value: number) {
+  public writeU8(schema: IFieldSchema, codecOffsetInBytes: number, value: number) {
     const absoluteOffsetInBytes = codecOffsetInBytes + schema.offsetInBytes;
     const currentData = this.view.getUint8(absoluteOffsetInBytes);
     const newData = (currentData & ~schema.bitMask) | ((value << schema.shift) & schema.bitMask);
