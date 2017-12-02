@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::cmp::{min, max};
 use std::path::Path;
 use super::try::*;
@@ -73,7 +73,7 @@ impl<'a> TransformContext<'a> {
     fn field_bits(&mut self, def: &'a FieldDefinition) -> Try<Option<u32>> {
         match &def.type_ref {
             &TypeReference::Bool => Ok(Some(1)),
-            &TypeReference::Byte => Ok(Some(8)),
+            &TypeReference::U8 => Ok(Some(8)),
             &TypeReference::U16 => Ok(Some(16)),
             &TypeReference::U32 => Ok(Some(32)),
             &TypeReference::Blob { .. } => Ok(None),
@@ -110,28 +110,25 @@ impl<'a> TransformContext<'a> {
 
     fn transform_type_info(&mut self, type_ref: &'a TypeReference) -> TypeInfo {
         let mut info = TypeInfo {
-            access_type: Identifier::new("u32"),
             is_bool: false,
             is_numeric: false,
             is_byte: false,
             is_u16: false,
             is_u32: false,
+            is_custom: false,
             is_enum: false,
             is_codec: false,
             is_blob: false,
         };
         match type_ref {
             &TypeReference::Bool => {
-                info.access_type = Identifier::new("bool");
                 info.is_bool = true;
             }
-            &TypeReference::Byte => {
-                info.access_type = Identifier::new("u8");
+            &TypeReference::U8 => {
                 info.is_numeric = true;
                 info.is_byte = true;
             }
             &TypeReference::U16 => {
-                info.access_type = Identifier::new("u16");
                 info.is_numeric = true;
                 info.is_u16 = true;
             }
@@ -141,6 +138,7 @@ impl<'a> TransformContext<'a> {
             }
             &TypeReference::Custom { ref name } => {
                 let key: &str = name;
+                info.is_custom = true;
                 info.is_enum = self.enums_by_name.contains_key(&key);
                 info.is_codec = self.codecs_by_name.contains_key(&key);
             }
@@ -158,7 +156,7 @@ impl<'a> TransformContext<'a> {
         Ok(Field {
             name: Identifier::new(&def.name),
             description: def.description.to_owned(),
-            type_ref: def.type_ref.get_custom_name().map(|n| Identifier::new(n)),
+            type_ref: Identifier::new(def.type_ref.get_name()),
             type_info: self.transform_type_info(&def.type_ref),
             diagram_info: DiagramInfo {
                 alias: "".to_owned(),
@@ -188,6 +186,7 @@ impl<'a> TransformContext<'a> {
                 }).unwrap_or(Unsigned::new(0)),
                 shift: def.ignore_first_bits,
             },
+            metadata: BTreeMap::new(),
         })
     }
 
@@ -301,6 +300,7 @@ impl<'a> TransformContext<'a> {
                 .collect::<Vec<_>>(),
             codecs: try_collect(self.document.codecs.iter(), |c| self.transform_codec(c))?,
             output: self.build_output()?,
+            metadata: self.document.metadata.clone(),
         })
     }
 

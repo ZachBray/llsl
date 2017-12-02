@@ -19,14 +19,14 @@ static FRAME_TYPE_SCHEMA: FieldSchema<u32> = FieldSchema {
     shift: 0,
 };
 
-static IGNORE_SCHEMA: FieldSchema<bool> = FieldSchema {
+static IGNORE_SCHEMA: FieldSchema<u8> = FieldSchema {
     name: "Ignore",
     offset_in_bytes: 4,
     bit_mask: 0b1000000, // 64
     shift: 6,
 };
 
-static METADATA_SCHEMA: FieldSchema<bool> = FieldSchema {
+static METADATA_SCHEMA: FieldSchema<u8> = FieldSchema {
     name: "Metadata",
     offset_in_bytes: 4,
     bit_mask: 0b10000000, // 128

@@ -65,7 +65,8 @@ impl<'a> CodecModel<'a> {
         let imports = codec
             .fields
             .iter()
-            .flat_map(|f| f.type_ref.iter())
+            .filter(|f| f.type_info.is_enum || f.type_info.is_codec)
+            .map(|f| &f.type_ref)
             .collect::<BTreeSet<_>>();
         CodecModel { codec, imports }
     }

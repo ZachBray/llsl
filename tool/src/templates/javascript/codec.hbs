@@ -51,10 +51,18 @@ var {{{codec.name.pascal_case}}} = exports.{{{codec.name.pascal_case}}} = (funct
   Object.defineProperty({{{../codec.name.pascal_case}}}.prototype, "{{{name.camel_case}}}", {
     enumerable: true,
     get: function() {
-      return this.buffer.read{{{type_info.access_type.pascal_case}}}({{{name.camel_case}}}Schema, this.codecOffsetInBytes);
+{{~#if type_info.is_enum}}
+      return this.buffer.readU32({{{name.camel_case}}}Schema, this.codecOffsetInBytes);
+{{~else}}
+      return this.buffer.read{{{type_ref.pascal_case}}}({{{name.camel_case}}}Schema, this.codecOffsetInBytes);
+{{~/if}}
     },
     set: function(value) {
-      this.buffer.write{{{type_info.access_type.pascal_case}}}({{{name.camel_case}}}Schema, this.codecOffsetInBytes, value);
+{{~#if type_info.is_enum}}
+      this.buffer.writeU32({{{name.camel_case}}}Schema, this.codecOffsetInBytes, value);
+{{~else}}
+      this.buffer.write{{{type_ref.pascal_case}}}({{{name.camel_case}}}Schema, this.codecOffsetInBytes, value);
+{{~/if}}
     },
   });
 {{/if ~}}

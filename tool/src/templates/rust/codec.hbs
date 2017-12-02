@@ -6,7 +6,7 @@ use super::{{{snake_case}}}::{{{pascal_case}}};
 {{/each}}
 
 {{#each codec.fields }}
-static {{{name.upper_snake_case}}}_SCHEMA: FieldSchema<{{{type_info.access_type.original}}}> = FieldSchema {
+static {{{name.upper_snake_case}}}_SCHEMA: FieldSchema<{{{metadata.storage_type}}}> = FieldSchema {
     name: "{{{name.original}}}",
     offset_in_bytes: {{{location.offset_bytes}}},
     bit_mask: {{{location.bit_mask.binary}}}, // {{{location.bit_mask.original}}}

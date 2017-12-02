@@ -1,4 +1,5 @@
 use std::u32;
+use std::collections::BTreeMap;
 use serde::{Deserialize, Deserializer};
 
 #[derive(Debug, Deserialize, Eq, PartialEq)]
@@ -31,7 +32,7 @@ pub struct EnumDefinition {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TypeReference {
     Bool,
-    Byte,
+    U8,
     U16,
     U32,
     Blob,
@@ -39,17 +40,22 @@ pub enum TypeReference {
 }
 
 impl TypeReference {
-    pub fn get_custom_name(&self) -> Option<&str> {
+    pub fn get_name(&self) -> &str {
         match self {
-            &TypeReference::Custom { ref name } => Some(name),
-            _ => None,
+            &TypeReference::Bool => "bool",
+            &TypeReference::U8 => "u8",
+            &TypeReference::U16 => "u16",
+            &TypeReference::U32 => "u32",
+            &TypeReference::Blob => "Blob",
+            &TypeReference::Custom { ref name } => name,
         }
     }
 
     fn from_token(token: &str) -> Self {
         match token {
             "bool" => TypeReference::Bool,
-            "byte" => TypeReference::Byte,
+            "byte" => TypeReference::U8,
+            "u8" => TypeReference::U8,
             "u16" => TypeReference::U16,
             "u32" => TypeReference::U32,
             "blob" => TypeReference::Blob,
@@ -126,4 +132,6 @@ pub struct Document {
     #[serde(default)]
     pub enums: Vec<EnumDefinition>,
     pub codecs: Vec<CodecDefinition>,
+    #[serde(default)]
+    pub metadata: BTreeMap<String, String>,
 }

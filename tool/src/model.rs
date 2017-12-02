@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use string_morph;
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq, Ord, PartialOrd)]
@@ -56,13 +57,12 @@ pub struct Enum {
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 pub struct TypeInfo {
-    // The intermediate type used to read/write
-    pub access_type: Identifier,
     pub is_bool: bool,
     pub is_numeric: bool,
     pub is_byte: bool,
     pub is_u16: bool,
     pub is_u32: bool,
+    pub is_custom: bool,
     pub is_enum: bool,
     pub is_codec: bool,
     pub is_blob: bool,
@@ -90,11 +90,12 @@ pub struct DiagramInfo {
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 pub struct Field {
     pub name: Identifier,
-    pub type_ref: Option<Identifier>,
+    pub type_ref: Identifier,
     pub type_info: TypeInfo,
     pub diagram_info: DiagramInfo,
     pub description: String,
     pub location: MemoryLocation,
+    pub metadata: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
@@ -121,4 +122,5 @@ pub struct Protocol {
     pub enums: Vec<Enum>,
     pub codecs: Vec<Codec>,
     pub output: Output,
+    pub metadata: BTreeMap<String, String>,
 }

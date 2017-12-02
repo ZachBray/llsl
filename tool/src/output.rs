@@ -39,6 +39,7 @@ impl<Model> TemplateRenderer<Model> {
             data,
             &mut output_file,
         )?;
+        info!("Successfully executed {} template", template.name);
         Ok(())
     }
 

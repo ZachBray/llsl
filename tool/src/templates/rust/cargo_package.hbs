@@ -3,4 +3,8 @@ name = "{{{name.snake_case}}}"
 version = "{{{version}}}"
 
 [dependencies]
+{{#if metadata.rust_runtime}}
+llsl_runtime = {{{metadata.rust_runtime}}}
+{{else}}
 llsl_runtime = "*"
+{{/if}}

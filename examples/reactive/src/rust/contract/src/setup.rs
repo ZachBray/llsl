@@ -4,7 +4,7 @@ use llsl_runtime::{BufferAdapter, FieldSchema, RuntimeError, Serializable};
 
 
 
-static LEASE_SCHEMA: FieldSchema<bool> = FieldSchema {
+static LEASE_SCHEMA: FieldSchema<u8> = FieldSchema {
     name: "Lease",
     offset_in_bytes: 0,
     bit_mask: 0b1, // 1

@@ -36,7 +36,7 @@ fn render_enums(renderer: &TemplateRenderer<&Protocol>) -> Try<()> {
 
 #[derive(Debug, Serialize, Clone, Eq, PartialEq)]
 struct CodecModel<'a> {
-    codec: &'a Codec,
+    codec: Codec,
     imports: BTreeSet<&'a Identifier>,
 }
 
@@ -45,9 +45,38 @@ impl<'a> CodecModel<'a> {
         let imports = codec
             .fields
             .iter()
-            .flat_map(|f| f.type_ref.iter())
+            .filter(|f| f.type_info.is_enum || f.type_info.is_codec)
+            .map(|f| &f.type_ref)
             .collect::<BTreeSet<_>>();
-        CodecModel { codec, imports }
+        // Add storage_type metadata to fields in order to
+        // create schemas
+        let fields = codec
+            .fields
+            .iter()
+            .map(|f| {
+                let mut field = f.clone();
+                let storage_type =
+                    if f.type_info.is_enum || f.type_info.is_codec || f.type_info.is_blob {
+                        "u32".to_owned()
+                    } else if f.type_info.is_bool {
+                        "u8".to_owned()
+                    } else {
+                        f.type_ref.original.to_owned()
+                    };
+                field.metadata.insert(
+                    "storage_type".to_owned(),
+                    storage_type,
+                );
+                field
+            })
+            .collect::<Vec<_>>();
+        CodecModel {
+            codec: Codec {
+                fields,
+                ..codec.clone()
+            },
+            imports,
+        }
     }
 }
 
