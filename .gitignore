@@ -1,2 +1,6 @@
 *.swo
 *.swp
+target/
+**/*.rs.bk
+.cargo
+Cargo.lock
