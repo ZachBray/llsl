@@ -6,4 +6,4 @@ VOLUME /usr/workspace
 
 ENV CARGO_HOME=/usr/workspace/.cargo
 
-CMD ./build/build.sh
+CMD sh build/rust/build.sh
